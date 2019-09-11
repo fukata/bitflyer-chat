@@ -5,3 +5,12 @@
 .calendar .active {
   color: white;
 }
+
+.calendar .nav-links {
+}
+.calendar .month-links {
+  padding-left: 20px;
+}
+.calendar .date-links {
+  padding-left: 20px;
+}
