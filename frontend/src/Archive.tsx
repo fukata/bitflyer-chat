@@ -5,6 +5,15 @@ import "./Archive.css"
 import ChatMessage from './ChatMessage'
 import moment from 'moment'
 import 'moment-timezone'
+import { RouteComponentProps } from "react-router"
+
+interface MatchParams {
+  date: string
+}
+
+interface Props extends RouteComponentProps<MatchParams> {
+  tz: string
+}
 
 interface State {
   loading: boolean 
@@ -13,8 +22,12 @@ interface State {
   messageIds: Array<string>;
 }
 
-export default class extends React.Component<any, State> {
-  constructor(props: any) {
+export default class extends React.Component<Props, State> {
+  static defaultProps = {
+    tz: moment.tz.guess()
+  }
+
+  constructor(props: Props) {
     super(props)
     const { date } = this.props.match.params
     this.state = {
@@ -48,10 +61,10 @@ export default class extends React.Component<any, State> {
     const m = moment(dateStr)
     // 日本時間をベースに表示するため、日本との時差を計算する。
     const utcOffset = m.utcOffset()
-    const offsetTokyo = m.tz('Asia/Tokyo').utcOffset() - utcOffset 
+    const offsetTokyo = m.tz(this.props.tz).utcOffset() - utcOffset 
     console.log(`offsetTokyo=${offsetTokyo}, utcOffset=${utcOffset}`)
     const fromDate = firebase.firestore.Timestamp.fromDate(m.add(-offsetTokyo, 'minutes').toDate())
-    const toDate = firebase.firestore.Timestamp.fromDate(m.add(-offsetTokyo, 'minutes').add(1, 'days').toDate())
+    const toDate = firebase.firestore.Timestamp.fromDate(m.add(1, 'days').toDate())
     console.log(`fromDate=${fromDate}, toDate=${toDate}`)
     db.collection('messages').where('date', '>=', fromDate).where('date', '<', toDate).orderBy('date', 'asc').get().then((querySnapshot: firebase.firestore.QuerySnapshot) => {
       const messages = this.state.messages
@@ -90,7 +103,7 @@ export default class extends React.Component<any, State> {
             </thead>
             <tbody>
               {this.state.messages.map(message => {
-                return <ChatMessage key={message.id} message={message} />
+                return <ChatMessage key={message.id} message={message} tz={this.props.tz} />
               })}
             </tbody>
           </table>
