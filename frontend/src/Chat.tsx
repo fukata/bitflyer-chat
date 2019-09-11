@@ -1,7 +1,7 @@
 import React from 'react'
 import './Chat.css'
 import { db } from './firebase'
-import ChatMessage from './ChatMessage'
+import ChatMessageList from './ChatMessageList'
 import firebase from 'firebase/app'
 import { RouterProps } from 'react-router'
 import moment from 'moment'
@@ -67,13 +67,7 @@ export default class extends React.Component<Props, State> {
     } else {
       return (
         <div className="col-md-10">
-          <table className="messages table table-dark table-sm">
-            <tbody>
-              {this.state.messages.map(message => {
-                return <ChatMessage key={message.id} message={message} />
-              })}
-            </tbody>
-          </table>
+          <ChatMessageList messages={this.state.messages} />
         </div>
       )
     }
