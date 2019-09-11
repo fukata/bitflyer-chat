@@ -3,8 +3,9 @@ import './Chat.css'
 import { db } from './firebase'
 import ChatMessage from './ChatMessage'
 import firebase from 'firebase/app'
+import { RouterProps } from 'react-router'
 
-interface Props {
+interface Props extends RouterProps {
 }
 interface State {
   messages: Array<firebase.firestore.QueryDocumentSnapshot>;
@@ -40,7 +41,6 @@ export default class extends React.Component<Props, State> {
   }
 
   render() {
-    const messages = this.state.messages
     return (
       <div className="col-md-10">
         <table className="messages table table-dark table-sm">
@@ -52,7 +52,7 @@ export default class extends React.Component<Props, State> {
             </tr>
           </thead>
           <tbody>
-            {messages.map(message => {
+            {this.state.messages.map(message => {
               return <ChatMessage key={message.id} message={message} />
             })}
           </tbody>

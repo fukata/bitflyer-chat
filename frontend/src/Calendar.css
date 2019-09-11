@@ -1,3 +1,7 @@
 .calendar {
-  
+
+}
+
+.calendar .active {
+  color: white;
 }
