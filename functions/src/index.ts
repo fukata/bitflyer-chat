@@ -88,5 +88,5 @@ export const importLogs = functions.https.onRequest(async (request, response) =>
     await batch.commit()
   }
 
-  response.send(messages)
+  response.send(`Imported ${messages.length} messages.`)
 })
