@@ -20,17 +20,17 @@ export default class extends React.Component<Props, State> {
   render() {
     const message = this.props.message
     const data = message.data()
-    const dateStr = moment(data.date.toDate()).tz(this.props.tz).format("HH:mm") 
+    const dateStr = moment(data.date.toDate()).tz(this.props.tz).format("MM/DD HH:mm") 
     return (
       <tr className="message">
-        <td className="message-date">
-          {dateStr}
-        </td>
-        <td className="message-nickname">
-          {data.nickname}
-        </td>
         <td className="message-message">
-          <Linkify options={{target: '_blank'}}>{data.message}</Linkify>
+          <div className="message-header">
+            <span className="date">[{dateStr}] </span>
+            <span className="nickname">{data.nickname}</span>
+          </div>
+          <div className="message-inner">
+            <Linkify options={{target: '_blank'}}>{data.message}</Linkify>
+          </div>
         </td>
       </tr>
     )

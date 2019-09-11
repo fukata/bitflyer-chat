@@ -3,7 +3,7 @@
 }
 
 .calendar .active {
-  color: white;
+  color: white !important;
 }
 
 .calendar .nav-links {
@@ -13,4 +13,12 @@
 }
 .calendar .date-links {
   padding-left: 20px;
+}
+
+.calendar li > a {
+  color: #007bff !important;
+  cursor: pointer;
+}
+.calendar li > a:hover {
+  text-decoration: underline !important;
 }

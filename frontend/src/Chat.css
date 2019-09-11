@@ -6,7 +6,25 @@
   text-align: left;
 }
 
+.messages .message .message-date {
+  word-break: keep-all;
+  white-space: pre;
+}
+
 .messages .message .message-message {
   white-space: pre-line;
   word-break: break-all;
 }
+
+.messages .message-message .message-header .date {
+  color: lightgreen;
+}
+
+.messages .message-message .message-header .nickname {
+  color: orange;
+}
+
+.messages .message-message .message-inner {
+  color: white;
+}
+

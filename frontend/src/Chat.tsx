@@ -68,13 +68,6 @@ export default class extends React.Component<Props, State> {
       return (
         <div className="col-md-10">
           <table className="messages table table-dark table-sm">
-            <thead>
-              <tr>
-                <th className="message-date">日時</th>
-                <th className="message-nickname">ユーザー</th>
-                <th className="message-message">メッセージ</th>
-              </tr>
-            </thead>
             <tbody>
               {this.state.messages.map(message => {
                 return <ChatMessage key={message.id} message={message} />
