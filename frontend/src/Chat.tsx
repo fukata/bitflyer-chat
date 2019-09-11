@@ -14,19 +14,23 @@ interface State {
 }
 
 export default class extends React.Component<Props, State> {
+  private unsubscribe: any 
+
   constructor(props: Props) {
     super(props)
+    this.unsubscribe = null
     this.state = {
       loading: true,
       messages: new Array<firebase.firestore.QueryDocumentSnapshot>(),
       messageIds: new Array<string>()
     }
   }
+
   componentDidMount() {
     const today = new Date()
     let fromDate = firebase.firestore.Timestamp.fromDate(new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours() - 2, today.getMinutes())) // 2時間前から表示
     console.log(`fromDate=${fromDate}`)
-    db.collection('messages').where('date', '>=', fromDate).orderBy('date', 'asc').onSnapshot(querySnapshot => {
+    this.unsubscribe = db.collection('messages').where('date', '>=', fromDate).orderBy('date', 'asc').onSnapshot(querySnapshot => {
       const messages = this.state.messages
       const messageIds = this.state.messageIds
       for (const doc of querySnapshot.docs) {
@@ -41,6 +45,15 @@ export default class extends React.Component<Props, State> {
         messageIds: messageIds
       })
     })
+  }
+
+  componentWillUnmount() {
+    console.log(`componentWillUnmount`)
+    if (this.unsubscribe) {
+      console.log(`unsubscribe`)
+      this.unsubscribe()
+      this.unsubscribe = null
+    }
   }
 
   render() {
