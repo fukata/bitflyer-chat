@@ -1,0 +1,9 @@
+{
+  "name": "bitflyer-chat",
+  "version": "1.0.0",
+  "description": "bitFlyerのチャットログビューアー",
+  "scripts": {
+    "deploy:all": "cd frontend && npm run build && cd .. && firebase deploy",
+    "deploy:frontend": "cd frontend && npm run build && cd .. && firebase deploy --only hosting"
+  }
+}

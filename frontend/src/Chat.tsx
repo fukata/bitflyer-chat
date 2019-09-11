@@ -21,7 +21,7 @@ export default class extends React.Component<Props, State> {
   }
   componentDidMount() {
     const today = new Date()
-    let fromDate = firebase.firestore.Timestamp.fromDate(new Date(today.getFullYear(), today.getMonth(), today.getDate()))
+    let fromDate = firebase.firestore.Timestamp.fromDate(new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours() - 2, today.getMinutes())) // 2時間前から表示
     console.log(`fromDate=${fromDate}`)
     db.collection('messages').where('date', '>=', fromDate).orderBy('date', 'asc').onSnapshot(querySnapshot => {
       const messages = this.state.messages
