@@ -3,6 +3,8 @@ import firebase from "firebase/app"
 import { db } from "./firebase"
 import "./Archive.css"
 import ChatMessage from './ChatMessage'
+import moment from 'moment'
+import 'moment-timezone'
 
 interface State {
   loading: boolean 
@@ -43,9 +45,13 @@ export default class extends React.Component<any, State> {
   fetchMessages(dateStr: string) {
     console.log(`fetchMessages. date=${dateStr}`)
     this.setState({ loading: true })
-    const date = new Date(dateStr)
-    const fromDate = firebase.firestore.Timestamp.fromDate(date)
-    const toDate = firebase.firestore.Timestamp.fromDate(new Date(date.getFullYear(), date.getMonth(), date.getDate()+1))
+    const m = moment(dateStr)
+    // 日本時間をベースに表示するため、日本との時差を計算する。
+    const utcOffset = m.utcOffset()
+    const offsetTokyo = m.tz('Asia/Tokyo').utcOffset() - utcOffset 
+    console.log(`offsetTokyo=${offsetTokyo}, utcOffset=${utcOffset}`)
+    const fromDate = firebase.firestore.Timestamp.fromDate(m.add(-offsetTokyo, 'minutes').toDate())
+    const toDate = firebase.firestore.Timestamp.fromDate(m.add(-offsetTokyo, 'minutes').add(1, 'days').toDate())
     console.log(`fromDate=${fromDate}, toDate=${toDate}`)
     db.collection('messages').where('date', '>=', fromDate).where('date', '<', toDate).orderBy('date', 'asc').get().then((querySnapshot: firebase.firestore.QuerySnapshot) => {
       const messages = this.state.messages

@@ -4,6 +4,7 @@ import { db } from './firebase'
 import ChatMessage from './ChatMessage'
 import firebase from 'firebase/app'
 import { RouterProps } from 'react-router'
+import moment from 'moment'
 
 interface Props extends RouterProps {
 }
@@ -27,8 +28,8 @@ export default class extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    const today = new Date()
-    let fromDate = firebase.firestore.Timestamp.fromDate(new Date(today.getFullYear(), today.getMonth(), today.getDate(), today.getHours() - 2, today.getMinutes())) // 2時間前から表示
+    const today = moment()
+    let fromDate = firebase.firestore.Timestamp.fromDate(today.add(-2, 'hours').utc().toDate()) // 2時間前から表示
     console.log(`fromDate=${fromDate}`)
     this.unsubscribe = db.collection('messages').where('date', '>=', fromDate).orderBy('date', 'asc').onSnapshot(querySnapshot => {
       const messages = this.state.messages

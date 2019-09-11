@@ -8,4 +8,5 @@
 
 .messages .message .message-message {
   white-space: pre-line;
+  word-break: break-all;
 }

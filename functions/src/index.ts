@@ -1,6 +1,8 @@
 import * as functions from 'firebase-functions'
 import fetch from 'node-fetch'
 import { WriteBatch, Timestamp } from '@google-cloud/firestore'
+import moment from 'moment'
+import 'moment-timezone'
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -36,7 +38,7 @@ function resolveMessageId(message: BitFlyerChatMessage): string {
  */
 function convertMessageToDocData(message: BitFlyerChatMessage): FirestoreMessageDocData {
   return {
-    date: Timestamp.fromDate(new Date(message.date)),
+    date: Timestamp.fromDate(moment(message.date).utc().toDate()),
     message: message.message,
     nickname: message.nickname
   }

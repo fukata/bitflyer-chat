@@ -4,6 +4,11 @@
   "description": "bitFlyerのチャットログビューアー",
   "scripts": {
     "deploy:all": "cd frontend && npm run build && cd .. && firebase deploy",
+    "deploy:functions": "firebase deploy --only functions",
     "deploy:frontend": "cd frontend && npm run build && cd .. && firebase deploy --only hosting"
+  },
+  "dependencies": {
+    "@types/moment": "^2.13.0",
+    "moment": "^2.24.0"
   }
 }
