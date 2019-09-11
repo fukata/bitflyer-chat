@@ -1,5 +1,6 @@
 import React from "react";
 import firebase from 'firebase'
+import Linkify from 'linkifyjs/react'
 
 interface Props {
   message: firebase.firestore.QueryDocumentSnapshot;
@@ -24,7 +25,7 @@ export default class extends React.Component<Props, State> {
           {data.nickname}
         </td>
         <td className="message-message">
-          {data.message}
+          <Linkify options={{target: '_blank'}}>{data.message}</Linkify>
         </td>
       </tr>
     )
