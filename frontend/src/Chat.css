@@ -1,0 +1,14 @@
+.messages {
+  text-align: left;
+}
+
+.messages .message {
+  text-align: left;
+}
+
+.messages .message-date {
+  width: 100px;
+}
+.messages .message-nickname {
+  width: 200px;
+}
