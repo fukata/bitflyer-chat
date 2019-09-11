@@ -1,0 +1,10 @@
+.sidebar {
+  background-color: #2a2f33;
+  color: white;
+  text-align: left;
+}
+
+.sidebar .sidebar-inner {
+  position: sticky;
+  top: 0;
+}

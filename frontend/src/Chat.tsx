@@ -42,7 +42,7 @@ export default class extends React.Component<Props, State> {
   render() {
     const messages = this.state.messages
     return (
-      <div>
+      <div className="col-md-10">
         <table className="messages table table-dark table-sm">
           <thead>
             <tr>
