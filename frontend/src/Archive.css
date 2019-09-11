@@ -5,3 +5,7 @@
 .archives .message {
   text-align: left;
 }
+
+.archives .message .message-message {
+  white-space: pre-line;
+}

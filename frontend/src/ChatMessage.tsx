@@ -17,13 +17,13 @@ export default class extends React.Component<Props, State> {
     const dateStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
     return (
       <tr className="message">
-        <td>
+        <td className="message-date">
           {dateStr}
         </td>
-        <td>
+        <td className="message-nickname">
           {data.nickname}
         </td>
-        <td>
+        <td className="message-message">
           {data.message}
         </td>
       </tr>

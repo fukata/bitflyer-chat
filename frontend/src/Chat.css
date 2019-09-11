@@ -5,3 +5,7 @@
 .messages .message {
   text-align: left;
 }
+
+.messages .message .message-message {
+  white-space: pre-line;
+}
