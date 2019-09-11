@@ -8,14 +8,16 @@ import { RouterProps } from 'react-router'
 interface Props extends RouterProps {
 }
 interface State {
-  messages: Array<firebase.firestore.QueryDocumentSnapshot>;
-  messageIds: Array<string>;
+  loading: boolean
+  messages: Array<firebase.firestore.QueryDocumentSnapshot>
+  messageIds: Array<string>
 }
 
 export default class extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
+      loading: true,
       messages: new Array<firebase.firestore.QueryDocumentSnapshot>(),
       messageIds: new Array<string>()
     }
@@ -34,6 +36,7 @@ export default class extends React.Component<Props, State> {
         }
       }
       this.setState({
+        loading: false,
         messages: messages,
         messageIds: messageIds
       })
@@ -41,23 +44,31 @@ export default class extends React.Component<Props, State> {
   }
 
   render() {
-    return (
-      <div className="col-md-10">
-        <table className="messages table table-dark table-sm">
-          <thead>
-            <tr>
-              <th className="message-date">日時</th>
-              <th className="message-nickname">ユーザー</th>
-              <th className="message-message">メッセージ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.messages.map(message => {
-              return <ChatMessage key={message.id} message={message} />
-            })}
-          </tbody>
-        </table>
-      </div>
-    )
+    if (this.state.loading) {
+      return (
+        <div className="col-md-10">
+          <p className="loading">Loading...</p>
+        </div>
+      )
+    } else {
+      return (
+        <div className="col-md-10">
+          <table className="messages table table-dark table-sm">
+            <thead>
+              <tr>
+                <th className="message-date">日時</th>
+                <th className="message-nickname">ユーザー</th>
+                <th className="message-message">メッセージ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.messages.map(message => {
+                return <ChatMessage key={message.id} message={message} />
+              })}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
   }
 }
