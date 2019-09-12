@@ -95,7 +95,7 @@ async function importBitFlyerLogs(fromDate: string) {
 /**
  * 定期的にチャットログを取り込むためのスケジューラー
  */
-exports.scheduledImportLogs = functions.pubsub.schedule('every 1 mins').onRun(async _ => {
+export const scheduledImportLogs = functions.pubsub.schedule('every 1 mins').onRun(async _ => {
   const fromDate = moment().format('YYYY-MM-DD')
   const concurrency = 1
   const promisePool = new PromisePool(() => importBitFlyerLogs(fromDate), concurrency)
