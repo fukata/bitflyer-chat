@@ -14,11 +14,9 @@ export default class extends React.Component {
     return (
       <ins 
         className="adsbygoogle"
-        style={{display: 'block'}}
+        style={{display: 'inline-block', width: '300px', height: '300px'}}
         data-ad-client="ca-pub-9703571485671477"
-        data-ad-slot="6225694511"
-        data-ad-format="auto"
-        data-full-width-responsive="true">
+        data-ad-slot="6225694511">
       </ins>
     )
   }
