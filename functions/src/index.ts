@@ -7,6 +7,7 @@ import 'moment-timezone'
 const admin = require('firebase-admin')
 admin.initializeApp();
 const firestore = admin.firestore()
+const storage = admin.storage()
 
 const PromisePool = require('es6-promise-pool').PromisePool;
 
@@ -56,6 +57,18 @@ function convertMessageToDocData(message: BitFlyerChatMessage): FirestoreMessage
  */
 async function importBitFlyerLogs(fromDate: string) {
   console.log(`fromDate=${fromDate}`)
+
+  // 保存済みかどうかのキャッシュファイルを取得
+  const filename = `cache.json`
+  const rootRef = storage.ref()
+  const messagesRef = rootRef.child('messages')
+  const fileRef = messagesRef.child(filename)
+  const fileDownloadURL = fileRef.getDownloadURL()
+  const cache: any = await fetch(fileDownloadURL).then(res => res.json())
+
+  // キャッシュデータの構造が存在しなければ初期化
+  const cacheMessageIds = cache['messageIds'] = cache['messageIds'] || {} 
+
   // bitflyerからチャットログを取得する。
   const bitFlyerApiEndpoint = `https://api.bitflyer.com/v1/getchats`
   const messages: Array<BitFlyerChatMessage> = await fetch(`${bitFlyerApiEndpoint}?from_date=${fromDate}`).then(res => res.json())
@@ -78,16 +91,25 @@ async function importBitFlyerLogs(fromDate: string) {
     const batch = batches[batchIdx]
 
     const messageDocId = resolveMessageId(message)
-    console.log(`messageDocId=${messageDocId}`)
-    const messageDocRef = messagesColRef.doc(messageDocId)
-    const messageDocData = convertMessageToDocData(message)
-    batch.set(messageDocRef, messageDocData)
+    // キャッシュをチェックし、存在すれば処理しない。
+    cacheMessageIds[messageDocId] = cacheMessageIds[messageDocId] || {}
+    if (cacheMessageIds[messageDocId].saved) {
+      console.log(`Already saved messageDocId=${messageDocId}`)
+    } else {
+      console.log(`Save messageDocId=${messageDocId}`)
+      const messageDocRef = messagesColRef.doc(messageDocId)
+      const messageDocData = convertMessageToDocData(message)
+      batch.set(messageDocRef, messageDocData)
+      cacheMessageIds[messageDocId].saved = true
+    }
   }
 
   console.log(`batches.length=${batches.length}`)
   for (const batch of batches) {
     await batch.commit()
   }
+
+  await fileRef.putString(JSON.stringify(cache))
 
   return messages.length
 }
