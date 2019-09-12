@@ -93,7 +93,7 @@ export default class extends React.Component<Props, State> {
     } else {
       return (
         <div className="col-md-10">
-          <ChatMessageList messages={this.state.messages} />
+          <ChatMessageList messages={this.state.messages} tz={this.props.tz} />
         </div>
       )
     }

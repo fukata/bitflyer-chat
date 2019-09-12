@@ -5,6 +5,7 @@ import ChatMessageList from './ChatMessageList'
 import firebase from 'firebase/app'
 import { RouterProps } from 'react-router'
 import moment from 'moment'
+import 'moment-timezone'
 
 interface Props extends RouterProps {
 }
@@ -65,9 +66,10 @@ export default class extends React.Component<Props, State> {
         </div>
       )
     } else {
+      const tz = moment.tz.guess()
       return (
         <div className="col-md-10">
-          <ChatMessageList messages={this.state.messages} />
+          <ChatMessageList messages={this.state.messages} tz={tz} />
         </div>
       )
     }
