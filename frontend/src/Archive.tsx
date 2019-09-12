@@ -3,9 +3,10 @@ import firebase from "firebase/app"
 import { db } from "./firebase"
 import "./Archive.css"
 import ChatMessageList from './ChatMessageList'
-import moment from 'moment'
+import moment, { Moment } from 'moment'
 import 'moment-timezone'
 import { RouteComponentProps } from "react-router"
+import InfiniteScroll from "react-infinite-scroller"
 
 interface MatchParams {
   date: string
@@ -16,10 +17,12 @@ interface Props extends RouteComponentProps<MatchParams> {
 }
 
 interface State {
-  loading: boolean 
+  pageLoaded: number 
+  hasMore: boolean 
+  lastLoadMoment: Moment | null 
   date: string 
-  messages: Array<firebase.firestore.QueryDocumentSnapshot>;
-  messageIds: Array<string>;
+  messages: Array<firebase.firestore.QueryDocumentSnapshot>
+  messageIds: Array<string>
 }
 
 export default class extends React.Component<Props, State> {
@@ -31,15 +34,13 @@ export default class extends React.Component<Props, State> {
     super(props)
     const { date } = this.props.match.params
     this.state = {
-      loading: true,
+      pageLoaded: 0,
+      hasMore: true,
+      lastLoadMoment: null,
       date: date,
       messages: new Array<firebase.firestore.QueryDocumentSnapshot>(),
       messageIds: new Array<string>()
     }
-  }
-
-  componentDidMount() {
-    this.fetchMessages(this.state.date)
   }
 
   componentDidUpdate() {
@@ -49,22 +50,29 @@ export default class extends React.Component<Props, State> {
     }
     this.setState({
       date: date,
+      pageLoaded: 0,
+      hasMore: true,
+      lastLoadMoment: null,
       messages: new Array<firebase.firestore.QueryDocumentSnapshot>(),
       messageIds: new Array<string>()
     })
-    this.fetchMessages(date)
   }
 
-  fetchMessages(dateStr: string) {
-    console.log(`fetchMessages. date=${dateStr}`)
-    this.setState({ loading: true })
-    const m = moment(dateStr)
+  loadMore() {
+    console.log(`hasMore. date=${this.state.date}, hasMore=${this.state.hasMore}, lastLoadMoment=${this.state.lastLoadMoment}`)
+    const pageLoaded = this.state.pageLoaded + 1
+    const perLoadHours = [0, 1, 2, 3, 6, 6, 6] // 一度に取得する時間間隔
+    const perLoadHour = perLoadHours[pageLoaded]
+    console.log(`perLoadHour=${perLoadHour}`)
     // 日本時間をベースに表示するため、日本との時差を計算する。
+    const m = moment(this.state.date)
     const utcOffset = m.utcOffset()
     const offsetTokyo = m.tz(this.props.tz).utcOffset() - utcOffset 
     console.log(`offsetTokyo=${offsetTokyo}, utcOffset=${utcOffset}`)
-    const fromDate = firebase.firestore.Timestamp.fromDate(m.add(-offsetTokyo, 'minutes').toDate())
-    const toDate = firebase.firestore.Timestamp.fromDate(m.add(1, 'days').toDate())
+    const fromDateMoment = this.state.lastLoadMoment !== null ? this.state.lastLoadMoment : m.add(-offsetTokyo, 'minutes')
+    const toDateMoment = fromDateMoment.clone().add(perLoadHour, 'hours')
+    const fromDate = firebase.firestore.Timestamp.fromDate(fromDateMoment.toDate())
+    const toDate = firebase.firestore.Timestamp.fromDate(toDateMoment.toDate())
     console.log(`fromDate=${fromDate}, toDate=${toDate}`)
     db.collection('messages').where('date', '>=', fromDate).where('date', '<', toDate).orderBy('date', 'asc').get().then((querySnapshot: firebase.firestore.QuerySnapshot) => {
       const messages = this.state.messages
@@ -75,8 +83,17 @@ export default class extends React.Component<Props, State> {
           messageIds.push(doc.id) 
         }
       }
+      
+      // 1日以上経過した場合は取得を止める。
+      let hasMore = true
+      if (parseInt(toDateMoment.format('x')) >= parseInt(m.add(-offsetTokyo, 'minutes').add(1, 'days').format('x'))) {
+        console.log(`Stop load. date=${this.state.date}, fromDateMoment=${fromDateMoment}, toDateMoment=${toDateMoment}`)
+        hasMore = false
+      }
       this.setState({
-        loading: false,
+        pageLoaded: pageLoaded,
+        hasMore: hasMore,
+        lastLoadMoment: toDateMoment.clone(),
         messages: messages,
         messageIds: messageIds
       })
@@ -84,18 +101,17 @@ export default class extends React.Component<Props, State> {
   }
 
   render() {
-    if (this.state.loading) {
-      return (
-        <div>
-          <p className="loading">Loading...</p>
-        </div>
-      )
-    } else {
-      return (
-        <div>
+    return (
+      <div>
+        <InfiniteScroll
+          loadMore={this.loadMore.bind(this)}
+          hasMore={this.state.hasMore}
+          loader={<div className="loading" key={0}>Loading ...</div>}
+          useWindow={false}
+        >
           <ChatMessageList messages={this.state.messages} tz={this.props.tz} />
-        </div>
-      )
-    }
+        </InfiniteScroll>
+      </div>
+    )
   }
 }
