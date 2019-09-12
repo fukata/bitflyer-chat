@@ -6,6 +6,8 @@ import Archive from './Archive'
 import Sidebar from './Sidebar'
 import withProps from 'recompose/withProps'
 import ReactGA from 'react-ga'; 
+import { db } from './firebase'
+import { firestore } from 'firebase'
 
 export default class extends React.Component<BrowserRouterProps> {
   componentDidMount() {

@@ -11,10 +11,12 @@ interface State {
 export default class extends React.Component<any, State> {
   private unsubscribe: any
   private latestDeployedAt: firestore.Timestamp
+  private firstUpdateCheck: boolean
 
   constructor(props: any) {
     super(props)
     this.latestDeployedAt = firestore.Timestamp.fromMillis(0) 
+    this.firstUpdateCheck = true
     this.state = {
       autoScroll: localStorage.getItem('settings.autoScroll') === '1',
       needUpdate: false,
@@ -33,11 +35,18 @@ export default class extends React.Component<any, State> {
       } else {
         const savedDeployedAtNumber = Number(savedDeployedAt)
         if (this.latestDeployedAt.seconds > savedDeployedAtNumber) {
-          this.setState({
-            needUpdate: true,
-          })
+          if (this.firstUpdateCheck) {
+            //FIXME 初期表示時にロ＝ディング画面などを作ってそこで処理させたい。
+            this._superReload()
+          } else {
+            this.setState({
+              needUpdate: true,
+            })
+          }
         }
       }
+
+      this.firstUpdateCheck = false
     })
   }
 
