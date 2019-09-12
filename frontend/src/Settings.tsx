@@ -1,7 +1,7 @@
 import React from "react"
 import "./Settings.css"
 import { db } from './firebase'
-import { firestore } from "firebase"
+import firebase from 'firebase/app'
 
 interface State {
   autoScroll: boolean
@@ -10,11 +10,11 @@ interface State {
 
 export default class extends React.Component<any, State> {
   private unsubscribe: any
-  private latestDeployedAt: firestore.Timestamp
+  private latestDeployedAt: firebase.firestore.Timestamp
 
   constructor(props: any) {
     super(props)
-    this.latestDeployedAt = firestore.Timestamp.fromMillis(0) 
+    this.latestDeployedAt = firebase.firestore.Timestamp.fromMillis(0) 
     this.state = {
       autoScroll: localStorage.getItem('settings.autoScroll') === '1',
       needUpdate: false,
