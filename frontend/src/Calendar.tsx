@@ -53,7 +53,7 @@ export default class extends React.Component<Props, State> {
   makeDateLinkNodeStatuses(fromDate: Moment, toDate: Moment): {} {
     let currentDate = fromDate.clone()
     const dates: any = {} 
-    while (currentDate < toDate) {
+    while (currentDate <= toDate) {
       const yDir = dates[currentDate.format('YYYY')] = dates[currentDate.format('YYYY')] || {}
       const mDir = yDir[currentDate.format('MM')] = yDir[currentDate.format('MM')] || []
       mDir.push(currentDate.clone())
@@ -75,7 +75,7 @@ export default class extends React.Component<Props, State> {
   makeDateLinkNodes(fromDate: Moment, toDate: Moment, dateLinkNodeOpenStatuses: any): JSX.Element[] {
     let currentDate = fromDate.clone()
     const dates: any = {} 
-    while (currentDate < toDate) {
+    while (currentDate <= toDate) {
       const yDir = dates[currentDate.format('YYYY')] = dates[currentDate.format('YYYY')] || {}
       const mDir = yDir[currentDate.format('MM')] = yDir[currentDate.format('MM')] || []
       mDir.push(currentDate.clone())
