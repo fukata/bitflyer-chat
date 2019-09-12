@@ -60,12 +60,9 @@ async function importBitFlyerLogs(fromDate: string) {
 
   // 保存済みかどうかのキャッシュファイルを取得
   const bucket = storage.bucket()
-  const filename = `cache.json`
-  const rootRef = bucket.ref()
-  const messagesRef = rootRef.child('messages')
-  const fileRef = messagesRef.child(filename)
-  const fileDownloadURL = fileRef.getDownloadURL()
-  const cache: any = await fetch(fileDownloadURL).then(res => res.json())
+  const file = bucket.file(`cache.json`)
+  const cacheStr: string = await file.download().then((data: any[]) => data[0])
+  const cache: any = JSON.parse(cacheStr)
 
   // キャッシュデータの構造が存在しなければ初期化
   const cacheMessageIds = cache['messageIds'] = cache['messageIds'] || {} 
@@ -110,7 +107,7 @@ async function importBitFlyerLogs(fromDate: string) {
     await batch.commit()
   }
 
-  await fileRef.putString(JSON.stringify(cache))
+  await file.save(JSON.stringify(cache))
 
   return messages.length
 }
