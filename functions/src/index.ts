@@ -4,8 +4,11 @@ import { WriteBatch, Timestamp } from '@google-cloud/firestore'
 import moment from 'moment'
 import 'moment-timezone'
 
-const promisePool = require('es6-promise-pool');
-const PromisePool = promisePool.PromisePool;
+const admin = require('firebase-admin')
+admin.initializeApp();
+const firestore = admin.firestore()
+
+const PromisePool = require('es6-promise-pool').PromisePool;
 
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
@@ -60,7 +63,6 @@ async function importBitFlyerLogs(fromDate: string) {
 
   // firestoreにデータを格納する。
   // WriteBatchが500件ずつしか処理できないため、batchesに500件ずつ格納し、最後に一括で実行する。
-  const firestore = admin.firestore()
   const messagesColRef = firestore.collection('messages')
   const batches: Array<WriteBatch> = []
   let processCount = 0
@@ -93,26 +95,29 @@ async function importBitFlyerLogs(fromDate: string) {
 /**
  * 定期的にチャットログを取り込むためのスケジューラー
  */
-exports.accountcleanup = functions.pubsub.schedule('every day 00:00').onRun(async _ => {
+exports.scheduledImportLogs = functions.pubsub.schedule('every 1 mins').onRun(async _ => {
   const fromDate = moment().format('YYYY-MM-DD')
-  const promisePool = new PromisePool(() => importBitFlyerLogs(fromDate))
+  const concurrency = 1
+  const promisePool = new PromisePool(() => importBitFlyerLogs(fromDate), concurrency)
   await promisePool.start();
-  console.log(`Imported messages by schedule.`)
+  console.log(`Imported messages by schedule. fromDate=${fromDate}`)
 });
 
 /**
  * チャットログを取り込むFunctions
  */
 export const importLogs = functions.https.onRequest(async (request, response) => {
-  const admin = require('firebase-admin')
-  admin.initializeApp();
-  
+  if (request.method !== 'POST') {
+    response.status(400).send(`Please use POST method.`)
+    return
+  }
+
   let fromDate = request.query.from_date || ''
   // 日付が指定されていない場合は当日を指定する。
   if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
     fromDate = moment().format('YYYY-MM-DD')
   }
 
-  const importedNum = importBitFlyerLogs(fromDate)
-  response.send(`Imported ${importedNum} messages.`)
+  const importedNum = await importBitFlyerLogs(fromDate)
+  response.send(`Imported ${importedNum} messages. fromDate=${fromDate}`)
 })
