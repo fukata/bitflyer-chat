@@ -87,18 +87,18 @@ export default class extends React.Component<Props, State> {
       const monthLinks = [] 
       for(const month in yDir) {
         const dateLinks = yDir[month].map((date: Moment) => {
-          return <li key={date.format('YYYY-MM-DD')}><NavLink to={`/archives/${date.format('YYYY-MM-DD')}`}>{date.format('YYYY-MM-DD')}</NavLink></li>;
+          return <li key={date.format('YYYY-MM-DD')}><NavLink to={`/archives/${date.format('YYYY-MM-DD')}`}>{date.format('YYYY年MM月DD日')}</NavLink></li>;
         }) 
         monthLinks.push(
           <li key={`${year}-${month}`}>
-            <a onClick={this._toggleMonthDir.bind(this, year, month)}>{month}</a>
+            <a onClick={this._toggleMonthDir.bind(this, year, month)}>{month}月</a>
             <ul className="date-links" style={{display: dateLinkNodeOpenStatuses[year].nodes[month].open ? 'block' : 'none'}}>{dateLinks}</ul>
           </li>
         )
       }
       dateLinkNodes.push(
         <li key={`${year}`}>
-          <a onClick={this._toggleYearDir.bind(this, year)}>{year}</a>
+          <a onClick={this._toggleYearDir.bind(this, year)}>{year}年</a>
           <ul className="month-links" style={{display: dateLinkNodeOpenStatuses[year].open ? 'block' : 'none'}}>{monthLinks}</ul>
         </li>
       )
