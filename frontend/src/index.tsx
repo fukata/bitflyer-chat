@@ -8,6 +8,12 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import ReactGA from 'react-ga';
 import createBrowserHistory from 'history/createBrowserHistory';
 
+if (process.env.NODE_ENV === 'production') {
+  console.log = (str: string) => {}
+  console.info = (str: string) => {}
+  console.debug = (str: string) => {}
+}
+
 ReactGA.initialize('UA-147739452-1');
 const history = createBrowserHistory();
 history.listen(({ pathname }) => {
