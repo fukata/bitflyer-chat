@@ -24,7 +24,7 @@ export default class extends React.Component<any, State> {
   render() {
     return (
       <div className="settings">
-        <h4>Settings</h4>
+        <h4>設定</h4>
         <div>
           <label>
             <input type="checkbox" checked={this.state.autoScroll} onChange={this._changedAutoScroll.bind(this)} /> 新着時に自動スクロール
