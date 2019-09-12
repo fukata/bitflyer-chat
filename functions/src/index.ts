@@ -59,8 +59,9 @@ async function importBitFlyerLogs(fromDate: string) {
   console.log(`fromDate=${fromDate}`)
 
   // 保存済みかどうかのキャッシュファイルを取得
+  const bucket = storage.bucket()
   const filename = `cache.json`
-  const rootRef = storage.ref()
+  const rootRef = bucket.ref()
   const messagesRef = rootRef.child('messages')
   const fileRef = messagesRef.child(filename)
   const fileDownloadURL = fileRef.getDownloadURL()
