@@ -9,14 +9,22 @@ interface Props {
 
 export default class extends React.Component<Props> {
   render() {
-    return (
-      <table className="messages table table-dark table-sm">
-        <tbody>
-          {this.props.messages.map(message => {
-            return <ChatMessage key={message.id} message={message} tz={this.props.tz} />
-          })}
-        </tbody>
-      </table>
-    )
+    if (this.props.messages.length > 0) {
+      return (
+        <table className="messages table table-dark table-sm">
+          <tbody>
+            {this.props.messages.map(message => {
+              return <ChatMessage key={message.id} message={message} tz={this.props.tz} />
+            })}
+          </tbody>
+        </table>
+      )
+    } else {
+      return (
+        <div>
+          <p className="attension">メッセージが見つかりません。</p>
+        </div>
+      )
+    }
   }
 }

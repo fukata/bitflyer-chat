@@ -61,14 +61,14 @@ export default class extends React.Component<Props, State> {
   render() {
     if (this.state.loading) {
       return (
-        <div className="col-md-10">
+        <div>
           <p className="loading">Loading...</p>
         </div>
       )
     } else {
       const tz = moment.tz.guess()
       return (
-        <div className="col-md-10">
+        <div>
           <ChatMessageList messages={this.state.messages} tz={tz} />
         </div>
       )

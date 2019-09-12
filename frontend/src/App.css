@@ -33,7 +33,16 @@
   }
 }
 
-
 .loading {
   color: white;
+  font-weight: bold;
+}
+
+.attension {
+  color: white;
+  font-weight: bold;
+}
+
+.main {
+  text-align: left;
 }

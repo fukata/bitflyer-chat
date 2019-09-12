@@ -18,10 +18,12 @@ export default class extends React.Component {
       <div className="App container-fluid">
         <div className="row">
           <Sidebar />
-          <Switch>
-            <Route path="/" exact component={Chat} />
-            <Route path="/archives/:date" component={ArchiveWithProps} />
-          </Switch>
+          <div className="main col-md-10">
+            <Switch>
+              <Route path="/" exact component={Chat} />
+              <Route path="/archives/:date" component={ArchiveWithProps} />
+            </Switch>
+          </div>
         </div>
       </div>
     )
