@@ -12,8 +12,6 @@ export default class extends React.Component {
           <Adsense />
           <Calendar />
           <Settings />
-
-          <p>※ 実装中</p>
         </div>
       </div>
     )
