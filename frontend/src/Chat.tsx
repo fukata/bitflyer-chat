@@ -77,7 +77,7 @@ export default class extends React.Component<Props, State> {
       const tz = moment.tz.guess()
       return (
         <div>
-          <ChatMessageList messages={this.state.messages} tz={tz} />
+          <ChatMessageList messages={this.state.messages} tz={tz} enabledTransition={true} />
         </div>
       )
     }
