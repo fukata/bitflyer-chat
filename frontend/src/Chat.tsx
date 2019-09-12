@@ -70,7 +70,7 @@ export default class extends React.Component<Props, State> {
     if (this.state.loading) {
       return (
         <div>
-          <p className="loading">Loading...</p>
+          <p className="loading">読み込み中 ...</p>
         </div>
       )
     } else {
