@@ -5,7 +5,8 @@
   "scripts": {
     "deploy:all": "cd frontend && npm run build && cd .. && firebase deploy",
     "deploy:functions": "firebase deploy --only functions",
-    "deploy:frontend": "cd frontend && npm run build && cd .. && firebase deploy --only hosting"
+    "deploy:frontend": "cd frontend && npm run build && cd .. && firebase deploy --only hosting && npm run deploy:frontend:complete",
+    "deploy:frontend:complete": "curl -XPOST -d username=$BITFLYER_CHAT_USERNAME -d password=$BITFLYER_CHAT_PASSWORD 'https://us-central1-bitflyer-chat.cloudfunctions.net/deployComplete'"
   },
   "dependencies": {
     "@types/moment": "^2.13.0",

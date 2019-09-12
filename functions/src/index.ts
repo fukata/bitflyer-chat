@@ -121,3 +121,31 @@ export const importLogs = functions.https.onRequest(async (request, response) =>
   const importedNum = await importBitFlyerLogs(fromDate)
   response.send(`Imported ${importedNum} messages. fromDate=${fromDate}`)
 })
+
+/**
+ * デプロイ日時を更新するFunctions
+ */
+export const deployComplete = functions.https.onRequest(async (request, response) => {
+  if (request.method !== 'POST') {
+    response.status(400).send(`Please use POST method.`)
+    return
+  }
+
+  //FIXME usernameとpasswordのチェック
+  const params = request.body
+  const username = params.username
+  const password = params.password
+  const config = functions.config().bitflyer_chat
+  if (username !== config.username || password !== config.password) {
+    response.status(400).send(`Can't authentication.`)
+    return
+  }
+
+  const deployedAt = Timestamp.now()
+  const batch = firestore.batch()
+  const latestDeployLogRef = firestore.collection('deploy_logs').doc('latest')
+  batch.set(latestDeployLogRef, {deployedAt: deployedAt})
+  await batch.commit()
+
+  response.send(`Deploy complete. ${deployedAt.seconds}`)
+})
