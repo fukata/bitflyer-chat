@@ -3,6 +3,7 @@
   color: white;
   text-align: left;
   min-height: 100vh;
+  border-right: 3px solid #484d54;
 }
 
 .sidebar .sidebar-inner {
