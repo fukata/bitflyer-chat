@@ -116,7 +116,7 @@ export default class extends React.Component<Props, State> {
         <InfiniteScroll
           loadMore={this.loadMore.bind(this)}
           hasMore={this.state.hasMore}
-          loader={<div className="loading" key={0}>Loading ...</div>}
+          loader={<div className="loading" key={0}>読み込み中 ...</div>}
           useWindow={false}
         >
           <ChatMessageList messages={this.state.messages} tz={this.props.tz} />
