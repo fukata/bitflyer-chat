@@ -9,14 +9,16 @@ export default class extends React.Component<any, State> {
   constructor(props: any) {
     super(props)
     this.state = {
-      autoScroll: false,
+      autoScroll: localStorage.getItem('settings.autoScroll') === '1',
     }
   }
 
   _changedAutoScroll() {
+    const autoScroll = !this.state.autoScroll
     this.setState({
-      autoScroll: !this.state.autoScroll,
+      autoScroll: autoScroll,
     })
+    localStorage.setItem('settings.autoScroll', autoScroll ? '1' : '0')
   }
 
   render() {

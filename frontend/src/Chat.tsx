@@ -6,6 +6,7 @@ import firebase from 'firebase/app'
 import { RouterProps } from 'react-router'
 import moment from 'moment'
 import 'moment-timezone'
+import { animateScroll as scroll } from 'react-scroll'
 
 interface Props extends RouterProps {
 }
@@ -46,6 +47,13 @@ export default class extends React.Component<Props, State> {
         messages: messages,
         messageIds: messageIds
       })
+
+      const autoScroll = localStorage.getItem('settings.autoScroll') === '1'
+      console.log(`autoScroll=${autoScroll}`)
+      if (autoScroll) {
+        scroll.scrollToBottom()
+        console.log(`scrollToBottom`)
+      }
     })
   }
 
