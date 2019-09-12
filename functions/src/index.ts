@@ -61,11 +61,11 @@ async function importBitFlyerLogs(fromDate: string) {
   // 保存済みかどうかのキャッシュファイルを取得
   const bucket = storage.bucket()
   const file = bucket.file(`cache.json`)
-  const cacheStr: string = await file.download().then((data: any[]) => data[0])
-  const cache: any = JSON.parse(cacheStr)
+  const cache: any = await file.download().then((data: any[]) => JSON.parse(data[0]))
 
   // キャッシュデータの構造が存在しなければ初期化
-  const cacheMessageIds = cache['messageIds'] = cache['messageIds'] || {} 
+  cache['messageIds'] = cache['messageIds'] || {}
+  const cacheMessageIds = cache['messageIds'][fromDate] = cache['messageIds'][fromDate] || {}
 
   // bitflyerからチャットログを取得する。
   const bitFlyerApiEndpoint = `https://api.bitflyer.com/v1/getchats`
@@ -107,6 +107,7 @@ async function importBitFlyerLogs(fromDate: string) {
     await batch.commit()
   }
 
+  //TODO messageIdsキャッシュの古い日付の物を削除する。
   await file.save(JSON.stringify(cache))
 
   return messages.length
