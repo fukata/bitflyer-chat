@@ -62,10 +62,14 @@ export default class extends React.Component<Props, State> {
     console.log(`hasMore. date=${this.state.date}, hasMore=${this.state.hasMore}, lastLoadMoment=${this.state.lastLoadMoment}`)
     const pageLoaded = this.state.pageLoaded + 1
     const perLoadHours = [0, 1, 2, 3, 6, 6, 6] // 一度に取得する時間間隔
-    const perLoadHour = perLoadHours[pageLoaded]
-    console.log(`perLoadHour=${perLoadHour}`)
+    let perLoadHour = perLoadHours[pageLoaded]
+    if (perLoadHour === undefined) {
+      perLoadHour = 1
+    }
+    console.log(`perLoadHour=${perLoadHour}, pageLoaded=${pageLoaded}`)
     // 日本時間をベースに表示するため、日本との時差を計算する。
-    const m = moment(this.state.date)
+    const date = this.state.date
+    const m = moment(date)
     const utcOffset = m.utcOffset()
     const offsetTokyo = m.tz(this.props.tz).utcOffset() - utcOffset 
     console.log(`offsetTokyo=${offsetTokyo}, utcOffset=${utcOffset}`)
@@ -75,6 +79,12 @@ export default class extends React.Component<Props, State> {
     const toDate = firebase.firestore.Timestamp.fromDate(toDateMoment.toDate())
     console.log(`fromDate=${fromDate}, toDate=${toDate}`)
     db.collection('messages').where('date', '>=', fromDate).where('date', '<', toDate).orderBy('date', 'asc').get().then((querySnapshot: firebase.firestore.QuerySnapshot) => {
+      // 24時間分ロードする前に日付を変更すると表示がおかしくなるので日付が正しいかチェック。
+      if (date !== this.state.date) {
+        console.log(`Not equal date so skip. date=${date}, state.date=${this.state.date}`)
+        return
+      }
+
       const messages = this.state.messages
       const messageIds = this.state.messageIds
       for (const doc of querySnapshot.docs) {

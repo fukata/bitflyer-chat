@@ -4,6 +4,9 @@ import { WriteBatch, Timestamp } from '@google-cloud/firestore'
 import moment from 'moment'
 import 'moment-timezone'
 
+const promisePool = require('es6-promise-pool');
+const PromisePool = promisePool.PromisePool;
+
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
 //
@@ -44,17 +47,11 @@ function convertMessageToDocData(message: BitFlyerChatMessage): FirestoreMessage
   }
 }
 
-export const importLogs = functions.https.onRequest(async (request, response) => {
-  const admin = require('firebase-admin')
-  admin.initializeApp();
-  
-  let fromDate = request.query.from_date || ''
-  // 日付が指定されていない場合は当日を指定する。
-  if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
-    const now = new Date()
-    fromDate = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}` // yyyy-mm-dd
-  }
-
+/**
+ * bitFlyerのチャットログを取り込む。
+ * @param fromDate 取り込む日時(YYYY-MM-DD)
+ */
+async function importBitFlyerLogs(fromDate: string) {
   console.log(`fromDate=${fromDate}`)
   // bitflyerからチャットログを取得する。
   const bitFlyerApiEndpoint = `https://api.bitflyer.com/v1/getchats`
@@ -90,5 +87,32 @@ export const importLogs = functions.https.onRequest(async (request, response) =>
     await batch.commit()
   }
 
-  response.send(`Imported ${messages.length} messages.`)
+  return messages.length
+}
+
+/**
+ * 定期的にチャットログを取り込むためのスケジューラー
+ */
+exports.accountcleanup = functions.pubsub.schedule('every day 00:00').onRun(async _ => {
+  const fromDate = moment().format('YYYY-MM-DD')
+  const promisePool = new PromisePool(() => importBitFlyerLogs(fromDate))
+  await promisePool.start();
+  console.log(`Imported messages by schedule.`)
+});
+
+/**
+ * チャットログを取り込むFunctions
+ */
+export const importLogs = functions.https.onRequest(async (request, response) => {
+  const admin = require('firebase-admin')
+  admin.initializeApp();
+  
+  let fromDate = request.query.from_date || ''
+  // 日付が指定されていない場合は当日を指定する。
+  if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+    fromDate = moment().format('YYYY-MM-DD')
+  }
+
+  const importedNum = importBitFlyerLogs(fromDate)
+  response.send(`Imported ${importedNum} messages.`)
 })
