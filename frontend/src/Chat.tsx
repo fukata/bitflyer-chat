@@ -3,12 +3,12 @@ import './Chat.css'
 import { db } from './firebase'
 import ChatMessageList from './ChatMessageList'
 import firebase from 'firebase/app'
-import { RouterProps } from 'react-router'
+import { RouteComponentProps } from 'react-router'
 import moment from 'moment'
 import 'moment-timezone'
 import { animateScroll as scroll } from 'react-scroll'
 
-interface Props extends RouterProps {
+interface Props extends RouteComponentProps {
 }
 interface State {
   loading: boolean
