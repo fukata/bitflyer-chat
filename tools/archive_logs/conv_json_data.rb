@@ -6,6 +6,7 @@
 Bundler.require
 require 'time'
 require 'json'
+require 'digest/sha2'
 
 # https://qiita.com/sonots/items/2a318e1c9a52c0046751#%E3%81%BE%E3%81%A8%E3%82%81%E3%82%8B%E3%81%A8%E3%81%93%E3%81%86
 # [+-]HH:MM, [+-]HHMM, [+-]HH
@@ -32,6 +33,10 @@ def zone_offset(timezone)
   else
     raise ArgumentError, "timezone format is invalid: #{timezone}"
   end
+end
+
+def resolve_message_doc_id(message)
+  return Digest::SHA256.hexdigest("#{message[:date]}:#{message[:nickname]}:#{message[:message]}")
 end
 
 def main
@@ -83,7 +88,13 @@ def main
       end
 
       time = strptime_with_zone("#{year}/#{chatlogtime}", "%Y/%m/%d %H:%M", "Asia/Tokyo")
-      messages.push({nickname: chatlogname, date: time.strftime("%Y-%m-%dT%H:%M:%S.%L"), message: message})
+      message = {
+        nickname: chatlogname, 
+        date: time.strftime("%Y-%m-%dT%H:%M:%S.%L"), 
+        message: message
+      }
+      message[:id] = resolve_message_doc_id(message)
+      messages.push(message)
     end
 
     #puts messages.inspect

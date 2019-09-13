@@ -1,13 +1,12 @@
 ######################################################################
 # conv_json_data.rbで変換したjsonを元に
-# gzip化、時間単位に分割する。 
+# 時間単位に分割する。 
 ######################################################################
 
 Bundler.require
 require 'time'
 require 'json'
 require 'optparse'
-require 'zlib'
 
 def parse_option()
   opt = {
@@ -28,10 +27,10 @@ def parse_option()
   opt
 end
 
-def save_archive_metadata(out_dir)
+def save_archive_metadata(out_dir, idx_num)
   metadata = {
     created_at: Time.now.utc.iso8601(),
-    files: (24/6).times.map{|n| "messages.#{n}.json.gz"} 
+    files: idx_num.times.map{|n| "messages.#{n}.json"} 
   }
   File.open("#{out_dir}/metadata.json", 'w') do |f|
     f.puts(JSON.dump(metadata))
@@ -39,10 +38,8 @@ def save_archive_metadata(out_dir)
 end
 
 def save_archive_messages(out_dir, idx, messages)
-  File.open("#{out_dir}/messages.#{idx}.json.gz", 'w') do |f|
-    gz = Zlib::GzipWriter.new(f)
-    gz.write(JSON.dump(messages))
-    gz.close
+  File.open("#{out_dir}/messages.#{idx}.json", 'w') do |f|
+    f.puts(JSON.dump(messages))
   end
 end
 
@@ -80,9 +77,12 @@ def main
     # 分割するファイルのインデックスの割り振り。6時間おきに1ファイル作る。
     archive_messages = []
     current_idx = 0
+    message_count = 0
+    per_file = 2500
     messages.each do |message|
+      message_count += 1
       date = Time.strptime(message[:date], "%Y-%m-%dT%H:%M:%S.%L")
-      file_idx = date.hour / 6 # 6時間おきに1ファイル作る。
+      file_idx = message_count / per_file
       unless current_idx == file_idx
         save_archive_messages(out_dir, current_idx, archive_messages)
         current_idx = file_idx
@@ -93,7 +93,7 @@ def main
     end
 
     save_archive_messages(out_dir, current_idx, archive_messages)
-    save_archive_metadata(out_dir)
+    save_archive_metadata(out_dir, current_idx)
   end
 end
 
