@@ -27,20 +27,27 @@ def parse_option()
   opt
 end
 
-def save_archive_metadata(out_dir, idx_num)
-  metadata = {
+def save_archive_metadata(out_dir, metadata)
+  metadata.merge!({
     created_at: Time.now.utc.iso8601(),
-    files: idx_num.times.map{|n| "messages.#{n}.json"} 
-  }
+    files: metadata[:hours].values.map{|v| v[:files]}.flatten,
+    message_num: metadata[:hours].values.map{|v| v[:message_num]}.reduce(:+),
+  })
   File.open("#{out_dir}/metadata.json", 'w') do |f|
     f.puts(JSON.dump(metadata))
   end
 end
 
-def save_archive_messages(out_dir, idx, messages)
-  File.open("#{out_dir}/messages.#{idx}.json", 'w') do |f|
+def save_archive_messages(out_dir, hour, idx, messages)
+  filename = "messages.h#{hour}.#{idx}.json"
+  File.open("#{out_dir}/#{filename}", 'w') do |f|
     f.puts(JSON.dump(messages))
   end
+ 
+  {
+    filename: filename,
+    message_num: messages.length,
+  }
 end
 
 def main
@@ -71,20 +78,45 @@ def main
 
     # データ用ディレクトリを作成
     FileUtils.mkdir_p(out_dir)
-  
+
     messages = JSON.parse(IO.read("#{opt[:json_dir]}/messages-#{date_str}.json"), symbolize_names: true)
 
-    # 分割するファイルのインデックスの割り振り。6時間おきに1ファイル作る。
+    # 時間別かつ一定メッセージずつ分割する。
+    # メタデータ情報
+    metadata = {
+      files: [], # ファイル一覧
+      hours: {}, # 時間帯別のファイル一覧
+    }
     archive_messages = []
     current_idx = 0
+    current_hour = '00' 
     message_count = 0
-    per_file = 2500
+    per_file = 1000
     messages.each do |message|
-      message_count += 1
       date = Time.strptime(message[:date], "%Y-%m-%dT%H:%M:%S.%L")
+      file_hour = date.strftime("%H")
+      if current_hour != file_hour
+        message_count = 0
+        current_idx = 0
+      end
+
       file_idx = message_count / per_file
-      unless current_idx == file_idx
-        save_archive_messages(out_dir, current_idx, archive_messages)
+      message_count += 1
+
+      if current_hour != file_hour
+        saved_info = save_archive_messages(out_dir, file_hour, file_idx, archive_messages)
+        metadata[:hours]["h#{file_hour}"] ||= { files: [], message_num: 0 }
+        metadata[:hours]["h#{file_hour}"][:files].push(saved_info[:filename])
+        metadata[:hours]["h#{file_hour}"][:message_num] += saved_info[:message_num]
+
+        current_hour = file_hour
+        archive_messages = []
+      elsif current_idx != file_idx
+        saved_info = save_archive_messages(out_dir, file_hour, file_idx, archive_messages)
+        metadata[:hours]["h#{file_hour}"] ||= { files: [], message_num: 0 }
+        metadata[:hours]["h#{file_hour}"][:files].push(saved_info[:filename])
+        metadata[:hours]["h#{file_hour}"][:message_num] += saved_info[:message_num]
+ 
         current_idx = file_idx
         archive_messages = [] 
       end
@@ -92,8 +124,8 @@ def main
       archive_messages.push(message)
     end
 
-    save_archive_messages(out_dir, current_idx, archive_messages)
-    save_archive_metadata(out_dir, current_idx)
+    save_archive_messages(out_dir, current_hour, current_idx, archive_messages)
+    save_archive_metadata(out_dir, metadata)
   end
 end
 
