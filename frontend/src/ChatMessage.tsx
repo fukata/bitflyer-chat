@@ -1,11 +1,12 @@
 import React from "react";
-import firebase from 'firebase'
+import firebase from 'firebase/app'
 import Linkify from 'linkifyjs/react'
 import moment from 'moment'
 import 'moment-timezone'
+import { ChatMessageData } from "./types";
 
 interface Props {
-  message: firebase.firestore.QueryDocumentSnapshot
+  message: firebase.firestore.QueryDocumentSnapshot | ChatMessageData
   tz: string
   enabledTransition: boolean 
 }
@@ -38,7 +39,12 @@ export default class extends React.Component<Props, State> {
   }
   render() {
     const message = this.props.message
-    const data = message.data()
+    let data = null
+    if (message instanceof firebase.firestore.QueryDocumentSnapshot) {
+      data = message.data()
+    } else {
+      data = message
+    }
     const dateStr = moment(data.date.toDate()).tz(this.props.tz).format("MM/DD HH:mm") 
     return (
       <tr className="message">

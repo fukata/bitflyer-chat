@@ -3,6 +3,7 @@ import { Route, Switch, BrowserRouterProps } from 'react-router-dom'
 import './App.css'
 import Chat from './Chat'
 import Archive from './Archive'
+import Archive2 from './Archive2'
 import Sidebar from './Sidebar'
 import withProps from 'recompose/withProps'
 import ReactGA from 'react-ga'; 
@@ -59,6 +60,12 @@ export default class extends React.Component<BrowserRouterProps, State> {
           tz: 'Asia/Tokyo'
         }),
       )(Archive)
+      const Archive2WithProps = withProps(
+        (props: any) => ({
+          ...props,
+          tz: 'Asia/Tokyo'
+        }),
+      )(Archive2)
       return (
         <div className="App container-fluid">
           <div className="row">
@@ -67,6 +74,7 @@ export default class extends React.Component<BrowserRouterProps, State> {
               <Switch>
                 <Route path="/" exact component={Chat} />
                 <Route path="/archives/:date" component={ArchiveWithProps} />
+                <Route path="/archives2/:date" component={Archive2WithProps} />
               </Switch>
             </div>
           </div>

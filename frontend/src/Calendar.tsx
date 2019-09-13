@@ -116,7 +116,7 @@ export default class extends React.Component<Props, State> {
           <li>
             <NavLink to="/" exact>最新</NavLink>
           </li>
-          <li>日付を指定</li>
+          <li>アーカイブ</li>
           {dateLinkNodes}
         </ul>
       </div>
