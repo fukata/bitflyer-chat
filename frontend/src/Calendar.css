@@ -14,6 +14,11 @@
 .calendar .date-links {
   padding-left: 20px;
 }
+.calendar .date-links > li {
+  list-style: none;
+  float: left;
+  padding-right: 5px;
+}
 
 .calendar li > a {
   color: #007bff !important;

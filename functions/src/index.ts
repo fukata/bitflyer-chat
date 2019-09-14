@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions'
 import fetch from 'node-fetch'
 import { WriteBatch, Timestamp } from '@google-cloud/firestore'
-import moment from 'moment'
+import moment, { Moment } from 'moment'
 import 'moment-timezone'
 
 const admin = require('firebase-admin')
@@ -28,6 +28,17 @@ interface FirestoreMessageDocData {
   date: Timestamp;
   message: string;
   nickname: string;
+}
+
+interface ArchiveMetadata {
+  files: string[]
+  messageNum: number 
+  hours: {
+    [key: string]: {
+      files: string[]
+      messageNum: number
+    }
+  }
 }
 
 /**
@@ -114,6 +125,141 @@ async function importBitFlyerLogs(fromDate: string) {
 }
 
 /**
+ * bitflyerのログをStorageにアーカイブする。
+ * @param fromDate YYYY-MM-DD
+ */
+async function archiveBitFlyerLogs(fromDate: string) {
+  const archiveDate = moment(fromDate)
+
+  // bitflyerからチャットログを取得する。
+  const fetchDate = archiveDate.clone().add(-1, 'days').format('YYYY-MM-DD')
+  const bitFlyerApiEndpoint = `https://api.bitflyer.com/v1/getchats`
+  const messages: Array<BitFlyerChatMessage> = await fetch(`${bitFlyerApiEndpoint}?from_date=${fetchDate}`).then(res => res.json())
+  console.log(`messages.length=${messages.length}`)
+
+  const archiveDateStr = archiveDate.format('YYYY-MM-DD')
+  const metadata: ArchiveMetadata = {
+    files: new Array<string>(), // ファイル一覧
+    messageNum: 0,
+    hours: {}, // 時間帯別のファイル一覧
+  }
+  let archiveMessages = new Array<BitFlyerChatMessage>()
+  let currentIdx = 0
+  let currentHour = '00' 
+  let messageCount = 0
+  const perFileMessage = 1000
+  for (const message of messages) {
+    if (!message.date.match(/Z$/)) {
+      // 日付の形式をISO8601に変換
+      message.date = `${message.date}Z`
+    }
+    // archiveDateStrは日本時間なのでメッセージ内の時間をAsia/Tokyoに変換
+    const date = moment(message.date).tz('Asia/Tokyo')
+    if (archiveDateStr !== date.format('YYYY-MM-DD')) {
+      continue
+    }
+      
+    const fileHour = date.format("HH")
+    if (currentHour !== fileHour) {
+      messageCount = 0
+      currentIdx = 0
+    }
+
+    const fileIdx = Math.floor(messageCount / perFileMessage)
+    messageCount++
+
+    if (currentHour !== fileHour) {
+      const savedArchiveMessageInfo = await saveArchiveMessages(archiveDate, currentHour, currentIdx, archiveMessages)
+      metadata.hours[`h${currentHour}`] = metadata.hours[`h${currentHour}`] || { files: [], messageNum: 0 }
+      metadata.hours[`h${currentHour}`].files.push(savedArchiveMessageInfo.filename)
+      metadata.hours[`h${currentHour}`].messageNum += savedArchiveMessageInfo.messageNum
+
+      currentHour = fileHour 
+      archiveMessages = []
+    } else if (currentIdx !== fileIdx) {
+      const savedArchiveMessageInfo = await saveArchiveMessages(archiveDate, currentHour, currentIdx, archiveMessages)
+      metadata.hours[`h${currentHour}`] = metadata.hours[`h${currentHour}`] || { files: [], messageNum: 0 }
+      metadata.hours[`h${currentHour}`].files.push(savedArchiveMessageInfo.filename)
+      metadata.hours[`h${currentHour}`].messageNum += savedArchiveMessageInfo.messageNum
+
+      currentIdx = fileIdx
+      archiveMessages = []
+    }
+
+    archiveMessages.push(message)
+  }
+
+  const savedInfo = await saveArchiveMessages(archiveDate, currentHour, currentIdx, archiveMessages)
+  metadata.hours[`h${currentHour}`] = metadata.hours[`h${currentHour}`] || { files: [], messageNum: 0 }
+  metadata.hours[`h${currentHour}`].files.push(savedInfo.filename)
+  metadata.hours[`h${currentHour}`].messageNum += savedInfo.messageNum
+
+  const savedMetadata = await saveArchiveMetadata(archiveDate, metadata)
+
+  return savedMetadata 
+}
+
+/**
+ * Storageにアーカイブを保存する。
+ * @param date 
+ * @param hour 
+ * @param idx 
+ * @param messages 
+ */
+async function saveArchiveMessages(date: Moment, hour: string, idx: number, messages: Array<BitFlyerChatMessage>) {
+  const filename = `messages.h${hour}.${idx}.json`
+  const messageNum = messages.length
+  console.log(`saveArchiveMessages. filename=${filename}, messagesNum=${messageNum}`)
+
+  const bucket = storage.bucket()
+  const file = bucket.file(`/public/archives/${date.format('YYYY/MM/DD')}/${filename}`)
+  await file.save(JSON.stringify(messages), {
+    gzip: true,
+    contentType: 'application/json',
+  })
+
+  return {
+    filename: filename,
+    messageNum: messageNum,
+  }
+}
+
+/**
+ * Storageにアーカイブのメタデータを保存する。 
+ * @param date 
+ * @param metadata 
+ */
+async function saveArchiveMetadata(date: Moment, metadata: ArchiveMetadata) {
+  const archiveMetadata: any = {
+    files: [],
+    message_num: 0,
+    hours: {},
+  }
+
+  for (const hour in metadata.hours) {
+    if (metadata.hours.hasOwnProperty(hour)) {
+      const v = metadata.hours[hour]
+      archiveMetadata.files = archiveMetadata.files.concat(v.files)
+      archiveMetadata.message_num += v.messageNum 
+      archiveMetadata.hours[hour] = {
+        files: v.files,
+        message_num: v.messageNum,
+      } 
+    }
+  }
+  
+  const filename = `metadata.json`
+  const bucket = storage.bucket()
+  const file = bucket.file(`/public/archives/${date.format('YYYY/MM/DD')}/${filename}`)
+  await file.save(JSON.stringify(archiveMetadata), {
+    gzip: true,
+    contentType: 'application/json',
+  })
+
+  return archiveMetadata
+}
+
+/**
  * 定期的にチャットログを取り込むためのスケジューラー
  */
 export const scheduledImportLogs = functions.pubsub.schedule('every 1 mins').onRun(async _ => {
@@ -170,3 +316,33 @@ export const deployComplete = functions.https.onRequest(async (request, response
 
   response.send(`Deploy complete. ${deployedAt.seconds}`)
 })
+
+/**
+ * チャットログをアーカイブするFunctions
+ */
+export const archiveLogs = functions.runWith({ timeoutSeconds: 300 }).https.onRequest(async (request, response) => {
+  if (request.method !== 'POST') {
+    response.status(400).send(`Please use POST method.`)
+    return
+  }
+
+  const fromDate = request.query.from_date || ''
+  if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+    response.status(400).send(`from_date is must not blank. Please specify YYYY-MM-DD (recent 5 days)`)
+    return
+  }
+
+  const metadata = await archiveBitFlyerLogs(fromDate)
+  response.send(JSON.stringify(metadata))
+})
+
+/**
+ * 定期的にチャットログをアーカイブするためのスケジューラー
+ */
+export const scheduledArchiveLogs = functions.pubsub.schedule('every 1 hours').onRun(async _ => {
+  const fromDate = moment().format('YYYY-MM-DD')
+  const concurrency = 1
+  const promisePool = new PromisePool(() => archiveBitFlyerLogs(fromDate), concurrency)
+  await promisePool.start();
+  console.log(`Archived messages by schedule. fromDate=${fromDate}`)
+});

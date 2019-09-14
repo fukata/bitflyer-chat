@@ -15,7 +15,7 @@ interface State {
 
 export default class extends React.Component<Props, State> {
   static defaultProps = {
-    fromDate: '2019-09-09',
+    fromDate: '2019-01-01',
     toDate: moment().format('YYYY-MM-DD'),
   }
 
@@ -87,12 +87,12 @@ export default class extends React.Component<Props, State> {
       const monthLinks = [] 
       for(const month in yDir) {
         const dateLinks = yDir[month].map((date: Moment) => {
-          return <li key={date.format('YYYY-MM-DD')}><NavLink to={`/archives/${date.format('YYYY-MM-DD')}`}>{date.format('YYYY年MM月DD日')}</NavLink></li>;
+          return <li key={date.format('YYYY-MM-DD')}><NavLink to={`/archives/${date.format('YYYY-MM-DD')}`}>{date.format('DD日')}</NavLink></li>;
         }) 
         monthLinks.push(
           <li key={`${year}-${month}`}>
             <a onClick={this._toggleMonthDir.bind(this, year, month)}>{month}月</a>
-            <ul className="date-links" style={{display: dateLinkNodeOpenStatuses[year].nodes[month].open ? 'block' : 'none'}}>{dateLinks}</ul>
+            <ul className="date-links clearfix" style={{display: dateLinkNodeOpenStatuses[year].nodes[month].open ? 'block' : 'none'}}>{dateLinks}</ul>
           </li>
         )
       }
