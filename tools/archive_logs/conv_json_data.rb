@@ -90,7 +90,7 @@ def main
       time = strptime_with_zone("#{year}/#{chatlogtime}", "%Y/%m/%d %H:%M", "Asia/Tokyo")
       message = {
         nickname: chatlogname, 
-        date: time.strftime("%Y-%m-%dT%H:%M:%S.%L"), 
+        date: time.utc.iso8601(3), 
         message: message
       }
       message[:id] = resolve_message_doc_id(message)

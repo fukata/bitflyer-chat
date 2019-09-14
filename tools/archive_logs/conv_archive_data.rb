@@ -104,18 +104,18 @@ def main
       message_count += 1
 
       if current_hour != file_hour
-        saved_info = save_archive_messages(out_dir, file_hour, file_idx, archive_messages)
-        metadata[:hours]["h#{file_hour}"] ||= { files: [], message_num: 0 }
-        metadata[:hours]["h#{file_hour}"][:files].push(saved_info[:filename])
-        metadata[:hours]["h#{file_hour}"][:message_num] += saved_info[:message_num]
+        saved_info = save_archive_messages(out_dir, current_hour, current_idx, archive_messages)
+        metadata[:hours]["h#{current_hour}"] ||= { files: [], message_num: 0 }
+        metadata[:hours]["h#{current_hour}"][:files].push(saved_info[:filename])
+        metadata[:hours]["h#{current_hour}"][:message_num] += saved_info[:message_num]
 
         current_hour = file_hour
         archive_messages = []
       elsif current_idx != file_idx
-        saved_info = save_archive_messages(out_dir, file_hour, file_idx, archive_messages)
-        metadata[:hours]["h#{file_hour}"] ||= { files: [], message_num: 0 }
-        metadata[:hours]["h#{file_hour}"][:files].push(saved_info[:filename])
-        metadata[:hours]["h#{file_hour}"][:message_num] += saved_info[:message_num]
+        saved_info = save_archive_messages(out_dir, current_hour, file_idx, archive_messages)
+        metadata[:hours]["h#{current_hour}"] ||= { files: [], message_num: 0 }
+        metadata[:hours]["h#{current_hour}"][:files].push(saved_info[:filename])
+        metadata[:hours]["h#{current_hour}"][:message_num] += saved_info[:message_num]
  
         current_idx = file_idx
         archive_messages = [] 
@@ -124,7 +124,11 @@ def main
       archive_messages.push(message)
     end
 
-    save_archive_messages(out_dir, current_hour, current_idx, archive_messages)
+    saved_info = save_archive_messages(out_dir, current_hour, current_idx, archive_messages)
+    metadata[:hours]["h#{current_hour}"] ||= { files: [], message_num: 0 }
+    metadata[:hours]["h#{current_hour}"][:files].push(saved_info[:filename])
+    metadata[:hours]["h#{current_hour}"][:message_num] += saved_info[:message_num]
+
     save_archive_metadata(out_dir, metadata)
   end
 end
