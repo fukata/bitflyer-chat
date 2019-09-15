@@ -12,6 +12,7 @@ import ScreenHeaderNav from './ScreenHeaderNav'
 
 interface MatchParams {
   date: string
+  hour: string
 }
 
 interface Props extends RouteComponentProps<MatchParams> {
@@ -25,6 +26,7 @@ interface State {
   hasMore: boolean 
   lastLoadMoment: Moment | null 
   date: string 
+  hours: string[]
   messages: Array<ChatMessageData>
   messageIds: Array<string>
 }
@@ -52,6 +54,7 @@ export default class extends React.Component<Props, State> {
       hasMore: false,
       lastLoadMoment: null,
       date: date,
+      hours: [],
       messages: [],
       messageIds: [] 
     }
@@ -63,14 +66,17 @@ export default class extends React.Component<Props, State> {
   }
 
   componentDidUpdate() {
-    const { date } = this.props.match.params
-    if (date === this.state.date) {
+    const { date, hour } = this.props.match.params
+    const hours = this.parseHour(hour)
+    //XXX 配列の値が同値かどうかチェックするためにJSON文字列を比較している。
+    if (date === this.state.date && JSON.stringify(hours) === JSON.stringify(this.state.hours)) {
       return
     }
     this.setState({
       ready: false,
       notfoundMetadata: false,
       date: date,
+      hours: hours,
       pageLoaded: 0,
       hasMore: false,
       lastLoadMoment: null,
@@ -79,6 +85,52 @@ export default class extends React.Component<Props, State> {
     })
     this.loadMetadata(date)
     scroll.scrollToTop()
+  }
+
+  _isValidHour(hour: number) {
+    if (hour < 0 || 23 < hour) {
+      return false
+    }
+    return true
+  }
+
+  /**
+   * 指定された時間をパースして連続する有効な時間一覧を配列で返す。
+   * 例1: 00-03 => 00,01,02
+   * 例2: 00 => 00
+   * @param hour 
+   */
+  parseHour(hour?: string) {
+    if (hour === undefined) {
+      return []
+    }
+
+    const hours = hour.split('-')
+
+    // 範囲指定ではなく単一指定された場合
+    if (hours.length == 1) {
+      const from = parseInt(hours[0])
+      if (this._isValidHour(from)) {
+        return [from.toString().padStart(2, '0')]
+      }
+    }
+
+    if (hours.length !== 2) {
+      console.log(`Invalid hour. hour=${hour}`)
+      return []
+    }
+    const from = parseInt(hours[0])
+    const to = parseInt(hours[1])
+    if (!this._isValidHour(from) || !this._isValidHour(to)) {
+      console.log(`Invalid hour. from=${from}, to=${to}`)
+      return []
+    }
+
+    const parsedHours: string[] = []
+    for (let i=from; i<to; i++) {
+      parsedHours.push(i.toString().padStart(2, '0'))
+    }
+    return parsedHours
   }
 
   async loadMetadata(date?: string) {
@@ -100,10 +152,20 @@ export default class extends React.Component<Props, State> {
     })
   }
 
+  getLoadFiles() {
+    if (this.state.hours.length === 0) {
+      return this.metadata.files
+    } else {
+      return this.state.hours.map(h => this.metadata.hours[`h${h}`].files).reduce((a, b) => a.concat(b))
+    }
+  }
+
   loadMore() {
     const pageLoaded = this.state.pageLoaded + 1
     console.log(`hasMore. date=${this.state.date}, pageLoaded=${pageLoaded}, lastLoadMoment=${this.state.lastLoadMoment}`)
-    const file: string = this.metadata.files[pageLoaded - 1] // インデックスは0始まり
+    const files = this.getLoadFiles()
+    console.log(`files=${files}`)
+    const file: string = files[pageLoaded - 1] // インデックスは0始まり
     if (file === undefined) {
       this.setState({
         pageLoaded: pageLoaded,
@@ -112,11 +174,6 @@ export default class extends React.Component<Props, State> {
       return
     }
 
-    //// アーカイブ用のjson内部の時間は日本時間なので時差分を引く。
-    //const m = moment()
-    //const utcOffset = m.utcOffset()
-    //const offsetTz = m.tz(this.props.tz).utcOffset() - utcOffset 
- 
     const [year, month, day] = this.state.date.split('-')
     const fileUrl = `https://firebasestorage.googleapis.com/v0/b/bitflyer-chat.appspot.com/o/public%2Farchives%2F${year}%2F${month}%2F${day}%2F${file}?alt=media`
     console.log(fileUrl)
@@ -136,7 +193,7 @@ export default class extends React.Component<Props, State> {
       this.setState({
         pageLoaded: pageLoaded,
         messages: messages,
-        hasMore: pageLoaded < this.metadata.files.length,
+        hasMore: pageLoaded < files.length,
       })
     })
   }

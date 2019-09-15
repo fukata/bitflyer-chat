@@ -68,8 +68,9 @@ export default class extends React.Component<Props, State> {
     localStorage.setItem('settings.autoScroll', autoScroll ? '1' : '0')
   }
 
+  /* eslint-disable jsx-a11y/anchor-is-valid, no-script-url */
   render() {
-    if (this.props.displayMode == 'navbar') {
+    if (this.props.displayMode === 'navbar') {
       return (
         <React.Fragment>
           <li className="nav-item">
@@ -102,4 +103,5 @@ export default class extends React.Component<Props, State> {
       )
     }
   }
+  /* eslint-enable jsx-a11y/anchor-is-valid, no-script-url */
 }

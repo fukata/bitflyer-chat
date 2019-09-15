@@ -150,7 +150,7 @@ export default class extends React.Component<Props, State> {
           }
         }).reverse()
         monthLinks.push(
-          <React.Fragment>
+          <React.Fragment key={`${year}-${month}`}>
             <a className="nav-link dropdown-toggle" href="#" role="button" onClick={this._toggleMonthDir.bind(this, year, month)}>
               {month}月
             </a>
@@ -175,8 +175,9 @@ export default class extends React.Component<Props, State> {
     return dateLinkNodes
   }
   /* eslint-enable jsx-a11y/anchor-is-valid, no-script-url */
+  /* eslint-disable jsx-a11y/anchor-is-valid, no-script-url */
   render() {
-    if (this.props.displayMode == 'navbar') {
+    if (this.props.displayMode === 'navbar') {
       const dateLinkNodes = this.makeDateLinkNodesNavbar(moment(this.props.fromDate), moment(this.props.toDate), this.state.dateLinkNodeOpenStatuses)
       return (
         <React.Fragment>
@@ -201,4 +202,5 @@ export default class extends React.Component<Props, State> {
       )
     }
   }
+  /* eslint-enable jsx-a11y/anchor-is-valid, no-script-url */
 }

@@ -2,6 +2,7 @@ import React from 'react'
 import Calendar from './Calendar'
 import Settings from './Settings'
 import { Metadata } from './types'
+import { NavLink } from 'react-router-dom'
 
 interface Props {
   title: string 
@@ -36,10 +37,13 @@ export default class extends React.Component<Props> {
     return messageNum
   }
 
+  /* eslint-disable jsx-a11y/anchor-is-valid, no-script-url */
   render() {
     let HourLinks = null
     if (this.props.displayHourLinks) {
-      const hourLinks = []
+      const hourLinks = [
+        <NavLink key={`hour-all`} className="dropdown-item" to={`/archives/${this.props.archiveDate}`} exact>全時間帯 ({this.getMessageNum(0, 23)})</NavLink>
+      ]
       const perHour = 3
       for (let i=0; i<24; i+=perHour) {
         const from = i
@@ -48,7 +52,7 @@ export default class extends React.Component<Props> {
         const hourFrom = from.toString().padStart(2, '0')
         const hourTo = to.toString().padStart(2, '0')
         hourLinks.push(
-          <a key={`hour-${hourFrom}-${hourTo}`} className="dropdown-item" href={`/archives/${this.props.archiveDate}/${hourFrom}-${hourTo}`}>{hourFrom}-{hourTo}時 ({messageNum})</a>
+          <NavLink key={`hour-${hourFrom}-${hourTo}`} className="dropdown-item" to={`/archives/${this.props.archiveDate}/${hourFrom}-${hourTo}`}>{hourFrom}-{hourTo}時 ({messageNum})</NavLink>
         )
       }
 
@@ -90,4 +94,5 @@ export default class extends React.Component<Props> {
       </nav>
     )
   }
+  /* eslint-enable jsx-a11y/anchor-is-valid, no-script-url */
 }
