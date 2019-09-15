@@ -42,7 +42,7 @@ export default class extends React.Component<Props> {
     let HourLinks = null
     if (this.props.displayHourLinks) {
       const hourLinks = [
-        <NavLink key={`hour-all`} className="dropdown-item" to={`/archives/${this.props.archiveDate}`} exact>全時間帯 ({this.getMessageNum(0, 23)})</NavLink>
+        <NavLink key={`hour-all`} className="dropdown-item" to={`/archives/${this.props.archiveDate}`} exact>全時間帯 ({this.getMessageNum(0, 24)})</NavLink>
       ]
       const perHour = 3
       for (let i=0; i<24; i+=perHour) {
