@@ -8,6 +8,7 @@ import moment from 'moment'
 import 'moment-timezone'
 import { animateScroll as scroll } from 'react-scroll'
 import ScreenHeaderNav from './ScreenHeaderNav'
+import ReactLoading from 'react-loading'
 
 interface Props extends RouteComponentProps {
 }
@@ -79,7 +80,9 @@ export default class extends React.Component<Props, State> {
         <div>
           {HeaderNav}
           <div className="screen-inner">
-            <p className="loading">読み込み中 ...</p>
+            <div className="loading">
+              <ReactLoading type={"bars"} color={"white"} />
+            </div>
           </div>
         </div>
       )
