@@ -68,6 +68,7 @@ function convertMessageToDocData(message: BitFlyerChatMessage): FirestoreMessage
  */
 async function importBitFlyerLogs(fromDate: string) {
   console.log(`importBitFlyerLogs. fromDate=${fromDate}`)
+  const importDate = moment(fromDate)
 
   // 保存済みかどうかのキャッシュファイルを取得
   const bucket = storage.bucket()
@@ -79,8 +80,9 @@ async function importBitFlyerLogs(fromDate: string) {
   const cacheMessageIds = cache['messageIds'][fromDate] = cache['messageIds'][fromDate] || {}
 
   // bitflyerからチャットログを取得する。
+  const fetchDate = importDate.clone().add(-1, 'days').tz('Asia/Tokyo').format('YYYY-MM-DD')
   const bitFlyerApiEndpoint = `https://api.bitflyer.com/v1/getchats`
-  const messages: Array<BitFlyerChatMessage> = await fetch(`${bitFlyerApiEndpoint}?from_date=${fromDate}`).then(res => res.json())
+  const messages: Array<BitFlyerChatMessage> = await fetch(`${bitFlyerApiEndpoint}?from_date=${fetchDate}`).then(res => res.json())
   console.log(`messages.length=${messages.length}`)
 
   // firestoreにデータを格納する。
@@ -291,7 +293,7 @@ export const importLogs = functions.https.onRequest(async (request, response) =>
   let fromDate = request.query.from_date || ''
   // 日付が指定されていない場合は当日を指定する。
   if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
-    fromDate = moment().format('YYYY-MM-DD')
+    fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
   }
 
   const importedNum = await importBitFlyerLogs(fromDate)
