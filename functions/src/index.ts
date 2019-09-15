@@ -64,10 +64,10 @@ function convertMessageToDocData(message: BitFlyerChatMessage): FirestoreMessage
 
 /**
  * bitFlyerのチャットログを取り込む。
- * @param fromDate 取り込む日時(YYYY-MM-DD)
+ * @param fromDate 取り込む日時(YYYY-MM-DD) 日本時間
  */
 async function importBitFlyerLogs(fromDate: string) {
-  console.log(`fromDate=${fromDate}`)
+  console.log(`importBitFlyerLogs. fromDate=${fromDate}`)
 
   // 保存済みかどうかのキャッシュファイルを取得
   const bucket = storage.bucket()
@@ -126,13 +126,14 @@ async function importBitFlyerLogs(fromDate: string) {
 
 /**
  * bitflyerのログをStorageにアーカイブする。
- * @param fromDate YYYY-MM-DD
+ * @param fromDate YYYY-MM-DD 日本時間の日付
  */
 async function archiveBitFlyerLogs(fromDate: string) {
+  console.log(`archiveBitFlyerLogs. fromDate=${fromDate}`)
   const archiveDate = moment(fromDate)
 
   // bitflyerからチャットログを取得する。
-  const fetchDate = archiveDate.clone().add(-1, 'days').format('YYYY-MM-DD')
+  const fetchDate = archiveDate.clone().add(-1, 'days').tz('Asia/Tokyo').format('YYYY-MM-DD')
   const bitFlyerApiEndpoint = `https://api.bitflyer.com/v1/getchats`
   const messages: Array<BitFlyerChatMessage> = await fetch(`${bitFlyerApiEndpoint}?from_date=${fetchDate}`).then(res => res.json())
   console.log(`messages.length=${messages.length}`)
@@ -271,7 +272,7 @@ async function saveArchiveMetadata(date: Moment, metadata: ArchiveMetadata) {
  * 定期的にチャットログを取り込むためのスケジューラー
  */
 export const scheduledImportLogs = functions.pubsub.schedule('every 1 mins').onRun(async _ => {
-  const fromDate = moment().format('YYYY-MM-DD')
+  const fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
   const concurrency = 1
   const promisePool = new PromisePool(() => importBitFlyerLogs(fromDate), concurrency)
   await promisePool.start();
@@ -348,7 +349,7 @@ export const archiveLogs = functions.runWith({ timeoutSeconds: 300 }).https.onRe
  * 定期的にチャットログをアーカイブするためのスケジューラー
  */
 export const scheduledArchiveLogs = functions.pubsub.schedule('every 1 hours').onRun(async _ => {
-  const fromDate = moment().format('YYYY-MM-DD')
+  const fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
   const concurrency = 1
   const promisePool = new PromisePool(() => archiveBitFlyerLogs(fromDate), concurrency)
   await promisePool.start();
