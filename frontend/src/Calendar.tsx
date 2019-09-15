@@ -15,6 +15,7 @@ interface State {
 
 export default class extends React.Component<Props, State> {
   private disabledDates: string[] 
+  private cacheDates: any 
   
   static defaultProps = {
     fromDate: '2016-08-20',
@@ -24,8 +25,9 @@ export default class extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.disabledDates = [
-      '2016-12-19'
+      '2016-12-19', // ログが無い
     ]
+    this.cacheDates = undefined 
     this.state = {
       dateLinkNodeOpenStatuses: this.makeDateLinkNodeStatuses(moment(this.props.fromDate), moment(this.props.toDate)),
       dateLinkNodes: []
@@ -59,15 +61,25 @@ export default class extends React.Component<Props, State> {
     return this.disabledDates.indexOf(date) !== -1
   }
 
-  makeDateLinkNodeStatuses(fromDate: Moment, toDate: Moment): {} {
+  _makeDates(fromDate: Moment, toDate: Moment) {
+    if (this.cacheDates) {
+      return this.cacheDates
+    }
+
     let currentDate = fromDate.clone()
     const dates: any = {} 
     while (currentDate <= toDate) {
       const yDir = dates[currentDate.format('YYYY')] = dates[currentDate.format('YYYY')] || {}
       const mDir = yDir[currentDate.format('MM')] = yDir[currentDate.format('MM')] || []
       mDir.push(currentDate.clone())
-      currentDate = currentDate.add(1, 'days')
+      currentDate.add(1, 'days')
     }
+    this.cacheDates = dates
+    return this.cacheDates 
+  }
+
+  makeDateLinkNodeStatuses(fromDate: Moment, toDate: Moment): {} {
+    const dates = this._makeDates(fromDate, toDate) 
     const dateLinkNodeOpenStatuses: any = {} 
     for (const year in dates) {
       const yDir = dates[year]
@@ -82,14 +94,7 @@ export default class extends React.Component<Props, State> {
 
   /* eslint-disable jsx-a11y/anchor-is-valid, no-script-url */
   makeDateLinkNodes(fromDate: Moment, toDate: Moment, dateLinkNodeOpenStatuses: any): JSX.Element[] {
-    let currentDate = fromDate.clone()
-    const dates: any = {} 
-    while (currentDate <= toDate) {
-      const yDir = dates[currentDate.format('YYYY')] = dates[currentDate.format('YYYY')] || {}
-      const mDir = yDir[currentDate.format('MM')] = yDir[currentDate.format('MM')] || []
-      mDir.push(currentDate.clone())
-      currentDate = currentDate.add(1, 'days')
-    }
+    const dates = this._makeDates(fromDate, toDate) 
     const dateLinkNodes = []
     const years = Object.keys(dates).sort().reverse()
     for (const year of years) {
