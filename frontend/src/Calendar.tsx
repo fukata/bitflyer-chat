@@ -193,7 +193,7 @@ export default class extends React.Component<Props, State> {
         <div className="calendar">
           <ul className="nav-links">
             <li>
-              <NavLink to="/" exact>最新</NavLink>
+              <NavLink to="/" exact>最新のチャット</NavLink>
             </li>
             <li>アーカイブ</li>
             {dateLinkNodes}
