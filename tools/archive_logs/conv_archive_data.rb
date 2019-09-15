@@ -7,6 +7,7 @@ Bundler.require
 require 'time'
 require 'json'
 require 'optparse'
+require 'active_support/all'
 
 def parse_option()
   opt = {
@@ -92,27 +93,31 @@ def main
     current_hour = '00' 
     message_count = 0
     per_file = 1000
+    file_indexes = {}
     messages.each do |message|
-      date = Time.strptime(message[:date], "%Y-%m-%dT%H:%M:%S.%L")
+      # 公開するアーカイブは日本時間
+      date = Time.parse(message[:date]).in_time_zone('Asia/Tokyo')
       file_hour = date.strftime("%H")
-      if current_hour != file_hour
-        message_count = 0
-        current_idx = 0
-      end
-
-      file_idx = message_count / per_file
-      message_count += 1
+      file_idx = (message_count / per_file).to_i
 
       if current_hour != file_hour
-        saved_info = save_archive_messages(out_dir, current_hour, current_idx, archive_messages)
+        file_indexes[current_hour] ||= -1
+        file_indexes[current_hour] += 1 
+
+        saved_info = save_archive_messages(out_dir, current_hour, file_indexes[current_hour], archive_messages)
         metadata[:hours]["h#{current_hour}"] ||= { files: [], message_num: 0 }
         metadata[:hours]["h#{current_hour}"][:files].push(saved_info[:filename])
         metadata[:hours]["h#{current_hour}"][:message_num] += saved_info[:message_num]
 
         current_hour = file_hour
+        current_idx = 0
+        message_count = 0
         archive_messages = []
       elsif current_idx != file_idx
-        saved_info = save_archive_messages(out_dir, current_hour, file_idx, archive_messages)
+        file_indexes[current_hour] ||= -1
+        file_indexes[current_hour] += 1
+
+        saved_info = save_archive_messages(out_dir, current_hour, file_indexes[current_hour], archive_messages)
         metadata[:hours]["h#{current_hour}"] ||= { files: [], message_num: 0 }
         metadata[:hours]["h#{current_hour}"][:files].push(saved_info[:filename])
         metadata[:hours]["h#{current_hour}"][:message_num] += saved_info[:message_num]
@@ -122,12 +127,18 @@ def main
       end
       
       archive_messages.push(message)
+      message_count += 1
     end
 
-    saved_info = save_archive_messages(out_dir, current_hour, current_idx, archive_messages)
-    metadata[:hours]["h#{current_hour}"] ||= { files: [], message_num: 0 }
-    metadata[:hours]["h#{current_hour}"][:files].push(saved_info[:filename])
-    metadata[:hours]["h#{current_hour}"][:message_num] += saved_info[:message_num]
+    if archive_messages.length > 0
+      file_indexes[current_hour] ||= -1
+      file_indexes[current_hour] += 1 
+ 
+      saved_info = save_archive_messages(out_dir, current_hour, file_indexes[current_hour], archive_messages)
+      metadata[:hours]["h#{current_hour}"] ||= { files: [], message_num: 0 }
+      metadata[:hours]["h#{current_hour}"][:files].push(saved_info[:filename])
+      metadata[:hours]["h#{current_hour}"][:message_num] += saved_info[:message_num]
+    end
 
     save_archive_metadata(out_dir, metadata)
   end

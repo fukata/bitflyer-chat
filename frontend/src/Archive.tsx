@@ -6,6 +6,8 @@ import 'moment-timezone'
 import { RouteComponentProps } from "react-router"
 import InfiniteScroll from "react-infinite-scroller"
 import { ChatMessageData, ArchivedChatMessageData } from './types'
+import ReactLoading from 'react-loading'
+import { animateScroll as scroll } from 'react-scroll'
 
 interface MatchParams {
   date: string
@@ -16,7 +18,9 @@ interface Props extends RouteComponentProps<MatchParams> {
 }
 
 interface State {
-  pageLoaded: number 
+  ready: boolean
+  notfoundMetadata: boolean
+  pageLoaded: number
   hasMore: boolean 
   lastLoadMoment: Moment | null 
   date: string 
@@ -24,11 +28,20 @@ interface State {
   messageIds: Array<string>
 }
 
+interface FirebaseErrorObject {
+  code: number
+  message: string
+  status: string
+
+}
+interface Metadata {
+  error?: FirebaseErrorObject
+  created_at: string
+  files: string[]
+}
+
 export default class extends React.Component<Props, State> {
-  private metadata: {
-    created_at: string
-    files: string[]
-  }
+  private metadata: Metadata
 
   static defaultProps = {
     tz: moment.tz.guess()
@@ -42,6 +55,8 @@ export default class extends React.Component<Props, State> {
     }
     const { date } = this.props.match.params
     this.state = {
+      ready: false,
+      notfoundMetadata: false,
       pageLoaded: 0,
       hasMore: false,
       lastLoadMoment: null,
@@ -53,6 +68,7 @@ export default class extends React.Component<Props, State> {
 
   componentDidMount() {
     this.loadMetadata()
+    scroll.scrollToTop()
   }
 
   componentDidUpdate() {
@@ -60,26 +76,33 @@ export default class extends React.Component<Props, State> {
     if (date === this.state.date) {
       return
     }
-    this.loadMetadata()
     this.setState({
+      ready: false,
+      notfoundMetadata: false,
       date: date,
       pageLoaded: 0,
-      hasMore: true,
+      hasMore: false,
       lastLoadMoment: null,
       messages: [], 
       messageIds: [] 
     })
+    this.loadMetadata(date)
+    scroll.scrollToTop()
   }
 
-  async loadMetadata() {
-    console.log(`loadMetadata`)
-    const [year, month, day] = this.state.date.split('-')
+  async loadMetadata(date?: string) {
+    date = (date || this.state.date)
+    console.log(`loadMetadata. date=${date}`)
+
+    const [year, month, day] = date.split('-')
     const metadataUrl = `https://firebasestorage.googleapis.com/v0/b/bitflyer-chat.appspot.com/o/public%2Farchives%2F${year}%2F${month}%2F${day}%2Fmetadata.json?alt=media`
     this.metadata = await fetch(metadataUrl).then(res => res.json())
     console.log(this.metadata)
 
     this.setState({
-      hasMore: true,
+      ready: true,
+      notfoundMetadata: this.metadata.error !== undefined,
+      hasMore: this.metadata.error === undefined,
       pageLoaded: 0,
       messages: [],
       messageIds: [],
@@ -128,16 +151,34 @@ export default class extends React.Component<Props, State> {
   }
 
   render() {
-    return (
-      <div>
-        <InfiniteScroll
-          loadMore={this.loadMore.bind(this)}
-          hasMore={this.state.hasMore}
-          loader={<div className="loading" key={0}>読み込み中 ...</div>}
-        >
-          <ChatMessageList messages={this.state.messages} tz={this.props.tz} />
-        </InfiniteScroll>
-      </div>
-    )
+    if (this.state.notfoundMetadata) {
+      return (
+        <div>
+          <p className="attension">
+            {this.state.date}のデータが見つかりません。他の日付を指定してください。
+          </p>
+        </div>
+      )
+    } else if (!this.state.ready) {
+      return (
+        <div>
+          <div className="loading">
+            <ReactLoading type={"bars"} color={"white"} />
+          </div>
+        </div>
+      )
+    } else {
+      return (
+        <div>
+          <InfiniteScroll
+            loadMore={this.loadMore.bind(this)}
+            hasMore={this.state.hasMore}
+            loader={ <div className="loading"><ReactLoading type={"bars"} color={"white"} /></div> }
+          >
+            <ChatMessageList messages={this.state.messages} tz={this.props.tz} />
+          </InfiniteScroll>
+        </div>
+      )
+    }
   }
 }

@@ -14,13 +14,18 @@ interface State {
 }
 
 export default class extends React.Component<Props, State> {
+  private disabledDates: string[] 
+  
   static defaultProps = {
-    fromDate: '2019-01-01',
+    fromDate: '2016-08-20',
     toDate: moment().format('YYYY-MM-DD'),
   }
 
   constructor(props: Props) {
     super(props)
+    this.disabledDates = [
+      '2016-12-19'
+    ]
     this.state = {
       dateLinkNodeOpenStatuses: this.makeDateLinkNodeStatuses(moment(this.props.fromDate), moment(this.props.toDate)),
       dateLinkNodes: []
@@ -48,6 +53,10 @@ export default class extends React.Component<Props, State> {
     this.setState({
       dateLinkNodeOpenStatuses: this.state.dateLinkNodeOpenStatuses,
     })
+  }
+
+  _isDisabledDate(date: string): boolean {
+    return this.disabledDates.indexOf(date) !== -1
   }
 
   makeDateLinkNodeStatuses(fromDate: Moment, toDate: Moment): {} {
@@ -82,13 +91,20 @@ export default class extends React.Component<Props, State> {
       currentDate = currentDate.add(1, 'days')
     }
     const dateLinkNodes = []
-    for (const year in dates) {
+    const years = Object.keys(dates).sort().reverse()
+    for (const year of years) {
       const yDir = dates[year]
-      const monthLinks = [] 
-      for(const month in yDir) {
+      const monthLinks = []
+      const months = Object.keys(yDir).sort().reverse()
+      for(const month of months) {
         const dateLinks = yDir[month].map((date: Moment) => {
-          return <li key={date.format('YYYY-MM-DD')}><NavLink to={`/archives/${date.format('YYYY-MM-DD')}`}>{date.format('DD日')}</NavLink></li>;
-        }) 
+          const _dateStr = date.format('YYYY-MM-DD')
+          if (this._isDisabledDate(_dateStr)) {
+            return <li key={_dateStr}><del>{date.format('DD日')}</del></li>;
+          } else {
+            return <li key={date.format('YYYY-MM-DD')}><NavLink to={`/archives/${_dateStr}`}>{date.format('DD日')}</NavLink></li>;
+          }
+        }).reverse()
         monthLinks.push(
           <li key={`${year}-${month}`}>
             <a onClick={this._toggleMonthDir.bind(this, year, month)}>{month}月</a>

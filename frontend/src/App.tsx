@@ -10,13 +10,15 @@ import ReactLoading from 'react-loading'
 import { db } from './firebase'
 
 interface State {
-  loaded: boolean 
+  loaded: boolean
+  loadError: boolean 
 }
 export default class extends React.Component<BrowserRouterProps, State> {
   constructor(props: BrowserRouterProps) {
     super(props)
     this.state = {
-      loaded: false
+      loaded: false,
+      loadError: false,
     }
   }
 
@@ -47,12 +49,28 @@ export default class extends React.Component<BrowserRouterProps, State> {
             loaded: true
           })
         }
+      }).catch(_ => {
+        this.setState({
+          loaded: false,
+          loadError: true,
+        })
       })
     }
   }
 
   render() {
-    if (this.state.loaded) {
+    if (this.state.loadError) {
+      return (
+        <div className="App">
+          <header className="App-header">
+            <div className="attension">
+              <p>エラーが発生しました。</p>
+              <p>F5を押してリロードを行ってください。</p>
+            </div>
+          </header>
+        </div>
+      )
+    } else if (this.state.loaded) {
       const ArchiveWithProps = withProps(
         (props: any) => ({
           ...props,

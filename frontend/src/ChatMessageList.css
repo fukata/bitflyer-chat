@@ -3,39 +3,34 @@
 }
 
 .messages .message {
+  border-bottom: 1px solid #484d54;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
   text-align: left;
-}
-
-.messages .message .message-date {
-  word-break: keep-all;
-  white-space: pre;
-}
-
-.messages .message .message-message {
   white-space: pre-line;
   word-break: break-all;
   background-color: red;
 }
-.messages .message .message-message.transition {
+.messages .message.transition {
   transition: background-color 1s linear;
   -moz-transition: background-color 1s linear;
   -o-transition: background-color 1s linear;
   -webkit-transition: background-color 1s linear;
   background-color: transparent;
 }
-.messages .message .message-message.no-transition {
+.messages .message.no-transition {
   background-color: transparent;
 }
 
-.messages .message-message .message-header .date {
+.messages .message .message-header .date {
   color: lightgreen;
 }
 
-.messages .message-message .message-header .nickname {
+.messages .message .message-header .nickname {
   color: orange;
 }
 
-.messages .message-message .message-inner {
+.messages .message .message-inner {
   color: white;
 }
 

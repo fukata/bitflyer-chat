@@ -38,6 +38,12 @@
   font-weight: bold;
 }
 
+/* react-loading */
+.loading > div {
+  text-align: center;
+  margin: 0 auto;
+}
+
 .attension {
   color: white;
   font-weight: bold;

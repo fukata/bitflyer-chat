@@ -148,6 +148,7 @@ async function archiveBitFlyerLogs(fromDate: string) {
   let currentHour = '00' 
   let messageCount = 0
   const perFileMessage = 1000
+  const fileIndexes: any = {}
   for (const message of messages) {
     if (!message.date.match(/Z$/)) {
       // 日付の形式をISO8601に変換
@@ -160,24 +161,25 @@ async function archiveBitFlyerLogs(fromDate: string) {
     }
       
     const fileHour = date.format("HH")
-    if (currentHour !== fileHour) {
-      messageCount = 0
-      currentIdx = 0
-    }
-
     const fileIdx = Math.floor(messageCount / perFileMessage)
-    messageCount++
 
     if (currentHour !== fileHour) {
-      const savedArchiveMessageInfo = await saveArchiveMessages(archiveDate, currentHour, currentIdx, archiveMessages)
+      fileIndexes[currentHour] = fileIndexes[currentHour] === undefined ? -1 : fileIndexes[currentHour]
+      fileIndexes[currentHour] += 1
+
+      const savedArchiveMessageInfo = await saveArchiveMessages(archiveDate, currentHour, fileIndexes[currentHour], archiveMessages)
       metadata.hours[`h${currentHour}`] = metadata.hours[`h${currentHour}`] || { files: [], messageNum: 0 }
       metadata.hours[`h${currentHour}`].files.push(savedArchiveMessageInfo.filename)
       metadata.hours[`h${currentHour}`].messageNum += savedArchiveMessageInfo.messageNum
 
-      currentHour = fileHour 
+      currentHour = fileHour
+      currentIdx = 0
       archiveMessages = []
     } else if (currentIdx !== fileIdx) {
-      const savedArchiveMessageInfo = await saveArchiveMessages(archiveDate, currentHour, currentIdx, archiveMessages)
+      fileIndexes[currentHour] = fileIndexes[currentHour] === undefined ? -1 : fileIndexes[currentHour]
+      fileIndexes[currentHour] += 1
+
+      const savedArchiveMessageInfo = await saveArchiveMessages(archiveDate, currentHour, fileIndexes[currentHour], archiveMessages)
       metadata.hours[`h${currentHour}`] = metadata.hours[`h${currentHour}`] || { files: [], messageNum: 0 }
       metadata.hours[`h${currentHour}`].files.push(savedArchiveMessageInfo.filename)
       metadata.hours[`h${currentHour}`].messageNum += savedArchiveMessageInfo.messageNum
@@ -187,12 +189,18 @@ async function archiveBitFlyerLogs(fromDate: string) {
     }
 
     archiveMessages.push(message)
+    messageCount++
   }
 
-  const savedInfo = await saveArchiveMessages(archiveDate, currentHour, currentIdx, archiveMessages)
-  metadata.hours[`h${currentHour}`] = metadata.hours[`h${currentHour}`] || { files: [], messageNum: 0 }
-  metadata.hours[`h${currentHour}`].files.push(savedInfo.filename)
-  metadata.hours[`h${currentHour}`].messageNum += savedInfo.messageNum
+  if (archiveMessages.length > 0) {
+    fileIndexes[currentHour] = fileIndexes[currentHour] === undefined ? -1 : fileIndexes[currentHour]
+    fileIndexes[currentHour] += 1
+
+    const savedInfo = await saveArchiveMessages(archiveDate, currentHour, fileIndexes[currentHour], archiveMessages)
+    metadata.hours[`h${currentHour}`] = metadata.hours[`h${currentHour}`] || { files: [], messageNum: 0 }
+    metadata.hours[`h${currentHour}`].files.push(savedInfo.filename)
+    metadata.hours[`h${currentHour}`].messageNum += savedInfo.messageNum
+  }
 
   const savedMetadata = await saveArchiveMetadata(archiveDate, metadata)
 

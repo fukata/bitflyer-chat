@@ -24,17 +24,17 @@ export default class extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      classes: ['message-message']
+      classes: ['message']
     }
   }
 
   componentDidMount() {
     if (this.props.enabledTransition) {
       setImmediate(() => {
-        this.setState({ classes: ['message-message', 'transition'] })
+        this.setState({ classes: ['message', 'transition'] })
       })
     } else {
-      this.setState({ classes: ['message-message', 'no-transition'] })
+      this.setState({ classes: ['message', 'no-transition'] })
     }
   }
   render() {
@@ -47,17 +47,15 @@ export default class extends React.Component<Props, State> {
     }
     const dateStr = moment(data.date.toDate()).tz(this.props.tz).format("MM/DD HH:mm") 
     return (
-      <tr className="message">
-        <td className={this.state.classes.join(' ')}>
-          <div className="message-header">
-            <span className="date">[{dateStr}] </span>
-            <span className="nickname">{data.nickname}</span>
-          </div>
-          <div className="message-inner">
-            <Linkify options={{target: '_blank'}}>{data.message}</Linkify>
-          </div>
-        </td>
-      </tr>
+      <div className={this.state.classes.join(' ')}>
+        <div className="message-header">
+          <span className="date">[{dateStr}]</span>
+          <span className="nickname">{data.nickname}</span>
+        </div>
+        <div className="message-inner">
+          <Linkify options={{target: '_blank'}}>{data.message}</Linkify>
+        </div>
+      </div>
     )
   }
 }

@@ -15,13 +15,11 @@ export default class extends React.Component<Props> {
   }
   render() {
     return (
-      <table className="messages table table-dark table-sm">
-        <tbody>
-          {this.props.messages.map((message, idx) => {
-            return <ChatMessage key={idx} message={message} tz={this.props.tz} enabledTransition={this.props.enabledTransition} />
-          })}
-        </tbody>
-      </table>
+      <div className="messages bg-dark">
+        {this.props.messages.map((message, idx) => {
+          return <ChatMessage key={idx} message={message} tz={this.props.tz} enabledTransition={this.props.enabledTransition} />
+        })}
+      </div>
     )
   }
 }
