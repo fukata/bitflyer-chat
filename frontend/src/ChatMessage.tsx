@@ -50,6 +50,7 @@ export default class extends React.Component<Props, State> {
       <div className={this.state.classes.join(' ')}>
         <div className="message-header">
           <span className="date">[{dateStr}]</span>
+          &nbsp;
           <span className="nickname">{data.nickname}</span>
         </div>
         <div className="message-inner">
