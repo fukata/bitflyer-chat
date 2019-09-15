@@ -7,7 +7,7 @@ import Adsense from './Adsense'
 export default class extends React.Component {
   render() {
     return (
-      <div className="sidebar col-md-2">
+      <div className="sidebar col-lg-2 d-none d-lg-block">
         <div className="sidebar-inner">
           <Adsense />
           <Calendar />

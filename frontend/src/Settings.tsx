@@ -3,16 +3,22 @@ import "./Settings.css"
 import { db } from './firebase'
 import firebase from 'firebase/app'
 
+interface Props {
+  displayMode: string
+}
 interface State {
   autoScroll: boolean
   needUpdate: boolean
 }
 
-export default class extends React.Component<any, State> {
+export default class extends React.Component<Props, State> {
   private unsubscribe: any
   private latestDeployedAt: firebase.firestore.Timestamp
 
-  constructor(props: any) {
+  static defaultProps = {
+    displayMode: 'sidebar', // sidebar or navbar
+  }
+  constructor(props: Props) {
     super(props)
     this.latestDeployedAt = firebase.firestore.Timestamp.fromMillis(0) 
     this.state = {
@@ -63,22 +69,37 @@ export default class extends React.Component<any, State> {
   }
 
   render() {
-    const UpdateButton = this.state.needUpdate ? (
-      <div className="update-container">
-        <button className="btn btn-danger" onClick={this._superReload.bind(this)}>更新する！</button>
-        <p className="attension">新しいアップデートがあります。更新して最新の状態にしてください。</p>
-      </div>
-      ) : null
-    return (
-      <div className="settings">
-        <h4>設定</h4>
-        <div>
-          <label>
-            <input type="checkbox" checked={this.state.autoScroll} onChange={this._changedAutoScroll.bind(this)} /> 新着時に自動スクロール
-          </label>
+    if (this.props.displayMode == 'navbar') {
+      return (
+        <React.Fragment>
+          <li className="nav-item">
+            <a href="#" className="nav-link disabled">設定</a>
+          </li>
+          <li className="nav-item">
+            <label style={{color: 'white'}}>
+              <input type="checkbox" checked={this.state.autoScroll} onChange={this._changedAutoScroll.bind(this)} /> 新着時に自動スクロール
+            </label>
+          </li>
+        </React.Fragment>
+      )
+    } else {
+      const UpdateButton = this.state.needUpdate ? (
+        <div className="update-container">
+          <button className="btn btn-danger" onClick={this._superReload.bind(this)}>更新する！</button>
+          <p className="attension">新しいアップデートがあります。更新して最新の状態にしてください。</p>
         </div>
-        {UpdateButton}
-      </div>
-    )
+        ) : null
+      return (
+        <div className="settings">
+          <h4>設定</h4>
+          <div>
+            <label>
+              <input type="checkbox" checked={this.state.autoScroll} onChange={this._changedAutoScroll.bind(this)} /> 新着時に自動スクロール
+            </label>
+          </div>
+          {UpdateButton}
+        </div>
+      )
+    }
   }
 }

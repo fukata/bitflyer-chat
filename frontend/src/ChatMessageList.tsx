@@ -16,8 +16,8 @@ export default class extends React.Component<Props> {
   render() {
     return (
       <div className="messages bg-dark">
-        {this.props.messages.map((message, idx) => {
-          return <ChatMessage key={idx} message={message} tz={this.props.tz} enabledTransition={this.props.enabledTransition} />
+        {this.props.messages.map((message, _) => {
+          return <ChatMessage key={message.id} message={message} tz={this.props.tz} enabledTransition={this.props.enabledTransition} />
         })}
       </div>
     )

@@ -5,9 +5,10 @@ import moment, { Moment } from 'moment'
 import 'moment-timezone'
 import { RouteComponentProps } from "react-router"
 import InfiniteScroll from "react-infinite-scroller"
-import { ChatMessageData, ArchivedChatMessageData } from './types'
+import { ChatMessageData, ArchivedChatMessageData, Metadata } from './types'
 import ReactLoading from 'react-loading'
 import { animateScroll as scroll } from 'react-scroll'
+import ScreenHeaderNav from './ScreenHeaderNav'
 
 interface MatchParams {
   date: string
@@ -28,18 +29,6 @@ interface State {
   messageIds: Array<string>
 }
 
-interface FirebaseErrorObject {
-  code: number
-  message: string
-  status: string
-
-}
-interface Metadata {
-  error?: FirebaseErrorObject
-  created_at: string
-  files: string[]
-}
-
 export default class extends React.Component<Props, State> {
   private metadata: Metadata
 
@@ -51,7 +40,9 @@ export default class extends React.Component<Props, State> {
     super(props)
     this.metadata = {
       created_at: '',
-      files: []
+      files: [],
+      message_num: 0,
+      hours: {},
     }
     const { date } = this.props.match.params
     this.state = {
@@ -150,33 +141,51 @@ export default class extends React.Component<Props, State> {
     })
   }
 
+
   render() {
+    const HeaderNav = (
+      <ScreenHeaderNav
+        title={`${this.state.date}のアーカイブ`}
+        displayHourLinks={true}
+        archiveDate={this.state.date}
+        archiveMetadata={this.metadata}
+      />
+    )
     if (this.state.notfoundMetadata) {
       return (
         <div>
-          <p className="attension">
-            {this.state.date}のデータが見つかりません。他の日付を指定してください。
-          </p>
+          {HeaderNav}
+          <div className="screen-inner">
+            <p className="attension">
+              {this.state.date}のデータが見つかりません。他の日付を指定してください。
+            </p>
+          </div>
         </div>
       )
     } else if (!this.state.ready) {
       return (
         <div>
-          <div className="loading">
-            <ReactLoading type={"bars"} color={"white"} />
+          {HeaderNav}
+          <div className="screen-inner">
+            <div className="loading">
+              <ReactLoading type={"bars"} color={"white"} />
+            </div>
           </div>
         </div>
       )
     } else {
       return (
         <div>
-          <InfiniteScroll
-            loadMore={this.loadMore.bind(this)}
-            hasMore={this.state.hasMore}
-            loader={ <div className="loading"><ReactLoading type={"bars"} color={"white"} /></div> }
-          >
-            <ChatMessageList messages={this.state.messages} tz={this.props.tz} />
-          </InfiniteScroll>
+          {HeaderNav}
+          <div className="screen-inner">
+            <InfiniteScroll
+              loadMore={this.loadMore.bind(this)}
+              hasMore={this.state.hasMore}
+              loader={ <div key="loading" className="loading"><ReactLoading type={"bars"} color={"white"} /></div> }
+            >
+              <ChatMessageList messages={this.state.messages} tz={this.props.tz} />
+            </InfiniteScroll>
+          </div>
         </div>
       )
     }

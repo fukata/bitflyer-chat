@@ -51,4 +51,16 @@
 
 .main {
   text-align: left;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.main .screen-inner {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.screen-navbar {
+  background-color: #2a2f33;
+  border-bottom: 3px solid #484d54;
 }

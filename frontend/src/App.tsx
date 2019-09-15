@@ -81,7 +81,7 @@ export default class extends React.Component<BrowserRouterProps, State> {
         <div className="App container-fluid">
           <div className="row">
             <Sidebar />
-            <div className="main col-md-10">
+            <div className="main col-lg-10">
               <Switch>
                 <Route path="/" exact component={Chat} />
                 <Route path="/archives/:date" component={ArchiveWithProps} />

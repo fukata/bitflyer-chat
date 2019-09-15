@@ -7,6 +7,7 @@ import { RouteComponentProps } from 'react-router'
 import moment from 'moment'
 import 'moment-timezone'
 import { animateScroll as scroll } from 'react-scroll'
+import ScreenHeaderNav from './ScreenHeaderNav'
 
 interface Props extends RouteComponentProps {
 }
@@ -67,17 +68,29 @@ export default class extends React.Component<Props, State> {
   }
 
   render() {
+    const HeaderNav = (
+      <ScreenHeaderNav
+        title={`最新のチャット`}
+        displayHourLinks={false}
+      />
+    )
     if (this.state.loading) {
       return (
         <div>
-          <p className="loading">読み込み中 ...</p>
+          {HeaderNav}
+          <div className="screen-inner">
+            <p className="loading">読み込み中 ...</p>
+          </div>
         </div>
       )
     } else {
       const tz = moment.tz.guess()
       return (
         <div>
-          <ChatMessageList messages={this.state.messages} tz={tz} enabledTransition={true} />
+          {HeaderNav}
+          <div className="screen-inner">
+            <ChatMessageList messages={this.state.messages} tz={tz} enabledTransition={true} />
+          </div>
         </div>
       )
     }
