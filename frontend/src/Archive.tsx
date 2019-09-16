@@ -21,11 +21,13 @@ interface Props extends RouteComponentProps<MatchParams> {
 
 interface State {
   ready: boolean
+  errorDate: boolean
   notfoundMetadata: boolean
   pageLoaded: number
   hasMore: boolean 
   lastLoadMoment: Moment | null 
-  date: string 
+  date: string
+  dateMoment: Moment | null 
   hours: string[]
   messages: Array<ChatMessageData>
   messageIds: Array<string>
@@ -47,16 +49,32 @@ export default class extends React.Component<Props, State> {
       hours: {},
     }
     const { date } = this.props.match.params
+    const dateMoment = this.parseDate(date)
     this.state = {
       ready: false,
+      errorDate: dateMoment === null,
       notfoundMetadata: false,
       pageLoaded: 0,
       hasMore: false,
       lastLoadMoment: null,
       date: date,
+      dateMoment: dateMoment,
       hours: [],
       messages: [],
       messageIds: [] 
+    }
+  }
+
+  /**
+   * 日付文字列をパースする。
+   * @param date YYYY-MM-DD
+   */
+  parseDate(date: string): Moment | null {
+    const m = moment(date, ['YYYY-MM-DD'], true)
+    if (m.isValid()) {
+      return m
+    } else {
+      return null
     }
   }
 
@@ -72,10 +90,13 @@ export default class extends React.Component<Props, State> {
     if (date === this.state.date && JSON.stringify(hours) === JSON.stringify(this.state.hours)) {
       return
     }
+    const dateMoment = this.parseDate(date)
     this.setState({
       ready: false,
+      errorDate: dateMoment === null,
       notfoundMetadata: false,
       date: date,
+      dateMoment: dateMoment,
       hours: hours,
       pageLoaded: 0,
       hasMore: false,
@@ -200,21 +221,34 @@ export default class extends React.Component<Props, State> {
 
 
   render() {
+    const dateStr = this.state.dateMoment === null ? '' : this.state.dateMoment.format('YYYY年MM月DD日') 
+    const title = this.state.errorDate ? `アーカイブ` : `${dateStr}のアーカイブ`
     const HeaderNav = (
       <ScreenHeaderNav
-        title={`${this.state.date}のアーカイブ`}
-        displayHourLinks={true}
+        title={title}
+        displayHourLinks={!this.state.errorDate}
         archiveDate={this.state.date}
         archiveMetadata={this.metadata}
       />
     )
-    if (this.state.notfoundMetadata) {
+    if (this.state.errorDate) {
       return (
         <div>
           {HeaderNav}
           <div className="screen-inner">
             <p className="attension">
-              {this.state.date}のデータが見つかりません。他の日付を指定してください。
+              指定された日付の形式(YYYY-MM-DD)が正しくありません。 
+            </p>
+          </div>
+        </div>
+      )
+    } else if (this.state.notfoundMetadata) {
+      return (
+        <div>
+          {HeaderNav}
+          <div className="screen-inner">
+            <p className="attension">
+              {dateStr}のデータが見つかりません。他の日付を指定してください。
             </p>
           </div>
         </div>
