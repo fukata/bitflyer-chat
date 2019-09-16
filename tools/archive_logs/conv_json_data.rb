@@ -7,6 +7,7 @@ Bundler.require
 require 'time'
 require 'json'
 require 'digest/sha2'
+require 'active_support/all'
 
 # https://qiita.com/sonots/items/2a318e1c9a52c0046751#%E3%81%BE%E3%81%A8%E3%82%81%E3%82%8B%E3%81%A8%E3%81%93%E3%81%86
 # [+-]HH:MM, [+-]HHMM, [+-]HH
@@ -69,6 +70,10 @@ def main
       next
     end
     puts "path=#{path}, message_htmls.length=#{message_htmls.length}"
+
+    # 秒以下のデータがないため、IDを生成した際に衝突する可能性があるので前回と同じ時間の場合は+1ミリ秒する。
+    latest_message_date = nil
+    latest_message_counter = 0 
     message_htmls.each do |message_html|
       matches = message_html.match(re_message)
       unless matches
@@ -88,9 +93,18 @@ def main
       end
 
       time = strptime_with_zone("#{year}/#{chatlogtime}", "%Y/%m/%d %H:%M", "Asia/Tokyo")
+      iso8601_time = time.utc.iso8601(3)
+      if latest_message_date == iso8601_time
+        latest_message_counter += 1
+        time = time.since(0.001 * latest_message_counter)
+        iso8601_time = time.utc.iso8601(3)
+      else 
+        latest_message_date = iso8601_time
+        latest_message_counter = 0
+      end 
       message = {
         nickname: chatlogname, 
-        date: time.utc.iso8601(3), 
+        date: iso8601_time, 
         message: message
       }
       message[:id] = resolve_message_doc_id(message)
