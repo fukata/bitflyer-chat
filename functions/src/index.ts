@@ -351,7 +351,7 @@ export const archiveLogs = functions.runWith({ timeoutSeconds: 300 }).https.onRe
  * 定期的にチャットログをアーカイブするためのスケジューラー
  */
 export const scheduledArchiveLogs = functions.pubsub.schedule('every 1 hours').onRun(async _ => {
-  const fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
+  const fromDate = moment().add(-1, 'hours').tz('Asia/Tokyo').format('YYYY-MM-DD')
   const concurrency = 1
   const promisePool = new PromisePool(() => archiveBitFlyerLogs(fromDate), concurrency)
   await promisePool.start();
