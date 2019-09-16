@@ -84,7 +84,7 @@ export default class extends React.Component<BrowserRouterProps, State> {
             <div className="main col-lg-10">
               <Switch>
                 <Route path="/" exact component={Chat} />
-                <Route path="/archives/:date/:hour" component={ArchiveWithProps} />
+                <Route path="/archives/:date/hour/:hour" component={ArchiveWithProps} />
                 <Route path="/archives/:date" component={ArchiveWithProps} />
               </Switch>
             </div>

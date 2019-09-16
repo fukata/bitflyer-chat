@@ -52,7 +52,7 @@ export default class extends React.Component<Props> {
         const hourFrom = from.toString().padStart(2, '0')
         const hourTo = to.toString().padStart(2, '0')
         hourLinks.push(
-          <NavLink key={`hour-${hourFrom}-${hourTo}`} className="dropdown-item" to={`/archives/${this.props.archiveDate}/${hourFrom}-${hourTo}`}>{hourFrom}-{hourTo}時 ({messageNum})</NavLink>
+          <NavLink key={`hour-${hourFrom}-${hourTo}`} className="dropdown-item" to={`/archives/${this.props.archiveDate}/hour/${hourFrom}-${hourTo}`}>{hourFrom}-{hourTo}時 ({messageNum})</NavLink>
         )
       }
 
