@@ -88,11 +88,12 @@ export default class extends React.Component<Props, State> {
       )
     } else {
       const tz = moment.tz.guess()
+      const enabledTransition = localStorage.getItem('settings.lowSpec') !== '1'
       return (
         <div>
           {HeaderNav}
           <div className="screen-inner">
-            <ChatMessageList messages={this.state.messages} tz={tz} enabledTransition={true} />
+            <ChatMessageList messages={this.state.messages} tz={tz} enabledTransition={enabledTransition} />
           </div>
         </div>
       )

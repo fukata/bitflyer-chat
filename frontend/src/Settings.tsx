@@ -2,12 +2,14 @@ import React from "react"
 import "./Settings.css"
 import { db } from './firebase'
 import firebase from 'firebase/app'
+const Device = require('react-device-detect')
 
 interface Props {
   displayMode: string
 }
 interface State {
   autoScroll: boolean
+  lowSpec: boolean
   needUpdate: boolean
 }
 
@@ -20,9 +22,18 @@ export default class extends React.Component<Props, State> {
   }
   constructor(props: Props) {
     super(props)
-    this.latestDeployedAt = firebase.firestore.Timestamp.fromMillis(0) 
+    this.latestDeployedAt = firebase.firestore.Timestamp.fromMillis(0)
+    console.log(`Device.isMobile=${Device.isMobile}`)
+    if (localStorage.getItem('settings.lowSpec') === null) {
+      if (Device.isMobile) {
+        localStorage.setItem('settings.lowSpec', '1')
+      } else {
+        localStorage.setItem('settings.lowSpec', '0')
+      }
+    }
     this.state = {
       autoScroll: localStorage.getItem('settings.autoScroll') === '1',
+      lowSpec: localStorage.getItem('settings.lowSpec') === '1',
       needUpdate: false,
     }
   }
@@ -68,6 +79,14 @@ export default class extends React.Component<Props, State> {
     localStorage.setItem('settings.autoScroll', autoScroll ? '1' : '0')
   }
 
+  _changedLowSpec() {
+    const lowSpec = !this.state.lowSpec
+    this.setState({
+      lowSpec: lowSpec,
+    })
+    localStorage.setItem('settings.lowSpec', lowSpec ? '1' : '0')
+  }
+
   /* eslint-disable jsx-a11y/anchor-is-valid, no-script-url */
   render() {
     if (this.props.displayMode === 'navbar') {
@@ -79,6 +98,11 @@ export default class extends React.Component<Props, State> {
           <li className="nav-item">
             <label style={{color: 'white'}}>
               <input type="checkbox" checked={this.state.autoScroll} onChange={this._changedAutoScroll.bind(this)} /> 新着時に自動スクロール
+            </label>
+          </li>
+          <li className="nav-item">
+            <label style={{color: 'white'}}>
+              <input type="checkbox" checked={this.state.lowSpec} onChange={this._changedLowSpec.bind(this)} /> 低負荷モード(スマホ推奨) 
             </label>
           </li>
         </React.Fragment>
@@ -96,6 +120,11 @@ export default class extends React.Component<Props, State> {
           <div>
             <label>
               <input type="checkbox" checked={this.state.autoScroll} onChange={this._changedAutoScroll.bind(this)} /> 新着時に自動スクロール
+            </label>
+          </div>
+          <div>
+            <label>
+              <input type="checkbox" checked={this.state.lowSpec} onChange={this._changedLowSpec.bind(this)} /> 低負荷モード(スマホ推奨) 
             </label>
           </div>
           {UpdateButton}
