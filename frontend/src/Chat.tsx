@@ -36,7 +36,7 @@ export default class extends React.Component<Props, State> {
     let fromDate = firebase.firestore.Timestamp.fromDate(today.clone().add(-1, 'hours').utc().toDate()) // 2時間前から表示
     console.log(`fromDate=${fromDate}`)
     this.unsubscribe = db.collection('messages').where('date', '>=', fromDate).orderBy('date', 'asc').onSnapshot(querySnapshot => {
-      const messages = this.state.messages
+      let messages = this.state.messages
       const messageIds = this.state.messageIds
       for (const doc of querySnapshot.docs) {
         if (messageIds.indexOf(doc.id) === -1) {
@@ -44,6 +44,14 @@ export default class extends React.Component<Props, State> {
           messageIds.push(doc.id) 
         }
       }
+
+      // 通常モード：10000件、低負荷モード：1000件のみデータを保持する。
+      const lowSpec = localStorage.getItem('settings.lowSpec') === '1'
+      const maxMessageNum = lowSpec ? 1000 : 10000
+      if (messages.length > maxMessageNum) {
+        messages = messages.slice(messages.length - maxMessageNum, messages.length)
+      } 
+
       this.setState({
         loading: false,
         messages: messages,
