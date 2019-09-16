@@ -20,7 +20,7 @@ export default class extends React.Component<Props, State> {
   
   static defaultProps = {
     fromDate: '2016-08-20',
-    toDate: moment().format('YYYY-MM-DD'),
+    toDate: moment().tz('Asia/Tokyo').format('YYYY-MM-DD'),
     displayMode: 'sidebar', // sidebar or navbar 
   }
 
