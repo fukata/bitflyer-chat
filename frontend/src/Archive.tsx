@@ -156,7 +156,7 @@ export default class extends React.Component<Props, State> {
     if (this.state.hours.length === 0) {
       return this.metadata.files
     } else {
-      return this.state.hours.map(h => this.metadata.hours[`h${h}`].files || []).reduce((a, b) => a.concat(b))
+      return this.state.hours.map(h => this.metadata.hours[`h${h}`] || {}).map(v => v.files || []).reduce((a, b) => a.concat(b))
     }
   }
 
