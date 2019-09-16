@@ -33,7 +33,7 @@ export default class extends React.Component<Props, State> {
 
   componentDidMount() {
     const today = moment()
-    let fromDate = firebase.firestore.Timestamp.fromDate(today.clone().add(-2, 'hours').utc().toDate()) // 2時間前から表示
+    let fromDate = firebase.firestore.Timestamp.fromDate(today.clone().add(-1, 'hours').utc().toDate()) // 2時間前から表示
     console.log(`fromDate=${fromDate}`)
     this.unsubscribe = db.collection('messages').where('date', '>=', fromDate).orderBy('date', 'asc').onSnapshot(querySnapshot => {
       const messages = this.state.messages
