@@ -1,0 +1,20 @@
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: 'Deploy'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.x' 
+      - run: npm install
+      - run: npm run deploy:all 
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          BITFLYER_CHAT_USERNAME: ${{ secrets.BITFLYER_CHAT_USERNAME }}
+          BITFLYER_CHAT_PASSWORD: ${{ secrets.BITFLYER_CHAT_PASSWORD}}

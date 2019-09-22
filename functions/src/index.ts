@@ -11,13 +11,6 @@ const storage = admin.storage()
 
 const PromisePool = require('es6-promise-pool').PromisePool;
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
-
 interface BitFlyerChatMessage {
   date: string;
   message: string;
@@ -284,21 +277,21 @@ export const scheduledImportLogs = functions.pubsub.schedule('every 1 mins').onR
 /**
  * チャットログを取り込むFunctions
  */
-export const importLogs = functions.https.onRequest(async (request, response) => {
-  if (request.method !== 'POST') {
-    response.status(400).send(`Please use POST method.`)
-    return
-  }
-
-  let fromDate = request.query.from_date || ''
-  // 日付が指定されていない場合は当日を指定する。
-  if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
-    fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
-  }
-
-  const importedNum = await importBitFlyerLogs(fromDate)
-  response.send(`Imported ${importedNum} messages. fromDate=${fromDate}`)
-})
+//export const importLogs = functions.https.onRequest(async (request, response) => {
+//  if (request.method !== 'POST') {
+//    response.status(400).send(`Please use POST method.`)
+//    return
+//  }
+//
+//  let fromDate = request.query.from_date || ''
+//  // 日付が指定されていない場合は当日を指定する。
+//  if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+//    fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
+//  }
+//
+//  const importedNum = await importBitFlyerLogs(fromDate)
+//  response.send(`Imported ${importedNum} messages. fromDate=${fromDate}`)
+//})
 
 /**
  * デプロイ日時を更新するFunctions
@@ -331,21 +324,21 @@ export const deployComplete = functions.https.onRequest(async (request, response
 /**
  * チャットログをアーカイブするFunctions
  */
-export const archiveLogs = functions.runWith({ timeoutSeconds: 300 }).https.onRequest(async (request, response) => {
-  if (request.method !== 'POST') {
-    response.status(400).send(`Please use POST method.`)
-    return
-  }
-
-  const fromDate = request.query.from_date || ''
-  if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
-    response.status(400).send(`from_date is must not blank. Please specify YYYY-MM-DD (recent 5 days)`)
-    return
-  }
-
-  const metadata = await archiveBitFlyerLogs(fromDate)
-  response.send(JSON.stringify(metadata))
-})
+//export const archiveLogs = functions.runWith({ timeoutSeconds: 300 }).https.onRequest(async (request, response) => {
+//  if (request.method !== 'POST') {
+//    response.status(400).send(`Please use POST method.`)
+//    return
+//  }
+//
+//  const fromDate = request.query.from_date || ''
+//  if (!fromDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+//    response.status(400).send(`from_date is must not blank. Please specify YYYY-MM-DD (recent 5 days)`)
+//    return
+//  }
+//
+//  const metadata = await archiveBitFlyerLogs(fromDate)
+//  response.send(JSON.stringify(metadata))
+//})
 
 /**
  * 定期的にチャットログをアーカイブするためのスケジューラー
