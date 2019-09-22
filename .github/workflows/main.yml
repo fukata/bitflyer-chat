@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '10.x' 
-      - run: npm install && cd frontend && npm install
+      - run: npm install && cd frontend && npm install && cd ../functions && npm install
       - run: npm run deploy:all 
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
