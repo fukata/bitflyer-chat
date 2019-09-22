@@ -93,7 +93,10 @@ def main
       end
 
       time = strptime_with_zone("#{year}/#{chatlogtime}", "%Y/%m/%d %H:%M", "Asia/Tokyo")
-      iso8601_time = time.utc.iso8601(3)
+      # TODO: すでに記録されているfirestore上のIDと合わせるために日付文字列は下記のような仕様とする。
+      # タイムゾーン文字列はなし、ミリ秒の桁数は可変(最大3桁)。
+      # 2019-09-12T05:26:50.22
+      # 2019-09-12T05:31:20.957
       if latest_message_date == iso8601_time
         latest_message_counter += 1
         time = time.since(0.001 * latest_message_counter)

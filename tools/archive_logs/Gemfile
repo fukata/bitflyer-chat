@@ -9,3 +9,5 @@ gem "activesupport", '6.0.0'
 gem "nokogiri"
 gem "faraday"
 gem "tzinfo", '~> 1.1'
+gem "facter"
+gem "thread"
