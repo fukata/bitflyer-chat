@@ -11,10 +11,15 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
-          node-version: '10.x' 
+          node-version: '10.x'
       - run: npm install && cd frontend && npm install && cd ../functions && npm install
-      - run: npm run deploy:all 
+      - run: npm run deploy:all
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           BITFLYER_CHAT_USERNAME: ${{ secrets.BITFLYER_CHAT_USERNAME }}
           BITFLYER_CHAT_PASSWORD: ${{ secrets.BITFLYER_CHAT_PASSWORD}}
+      - uses: Ilshidur/action-slack@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: ${{ secrets.SLACK_USERNAME }}
+          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
