@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "bitFlyerのチャットログビューアー",
   "scripts": {
-    "deploy:all": "cd frontend && npm run build && cd .. && npm run deploy:functions && npm run deploy:frontend",
+    "deploy:all": "npm run deploy:functions && npm run deploy:frontend",
     "deploy:functions": "npm run deploy:functions:config && firebase deploy --only functions",
     "deploy:functions:config": "firebase functions:config:set bitflyer_chat.username=\"$BITFLYER_CHAT_USERNAME\" bitflyer_chat.password=\"$BITFLYER_CHAT_PASSWORD\"",
     "deploy:frontend": "cd frontend && npm run build && cd .. && firebase deploy --only hosting && npm run deploy:frontend:complete",
