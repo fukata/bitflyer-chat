@@ -23,3 +23,4 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_USERNAME: ${{ secrets.SLACK_USERNAME }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+          SLACK_OVERRIDE_MESSAGE: "Deployed to production ${GITHUB_SHA}"
