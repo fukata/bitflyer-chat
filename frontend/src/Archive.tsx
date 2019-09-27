@@ -24,10 +24,10 @@ interface State {
   errorDate: boolean
   notfoundMetadata: boolean
   pageLoaded: number
-  hasMore: boolean 
-  lastLoadMoment: Moment | null 
+  hasMore: boolean
+  lastLoadMoment: Moment | null
   date: string
-  dateMoment: Moment | null 
+  dateMoment: Moment | null
   hours: string[]
   messages: Array<ChatMessageData>
   messageIds: Array<string>
@@ -61,7 +61,7 @@ export default class extends React.Component<Props, State> {
       dateMoment: dateMoment,
       hours: [],
       messages: [],
-      messageIds: [] 
+      messageIds: []
     }
   }
 
@@ -101,8 +101,8 @@ export default class extends React.Component<Props, State> {
       pageLoaded: 0,
       hasMore: false,
       lastLoadMoment: null,
-      messages: [], 
-      messageIds: [] 
+      messages: [],
+      messageIds: []
     })
     this.loadMetadata(date)
     scroll.scrollToTop()
@@ -119,7 +119,7 @@ export default class extends React.Component<Props, State> {
    * 指定された時間をパースして連続する有効な時間一覧を配列で返す。
    * 例1: 00-03 => 00,01,02
    * 例2: 00 => 00
-   * @param hour 
+   * @param hour
    */
   parseHour(hour?: string) {
     if (hour === undefined) {
@@ -129,7 +129,7 @@ export default class extends React.Component<Props, State> {
     const hours = hour.split('-')
 
     // 範囲指定ではなく単一指定された場合
-    if (hours.length == 1) {
+    if (hours.length === 1) {
       const from = parseInt(hours[0])
       if (this._isValidHour(from)) {
         return [from.toString().padStart(2, '0')]
@@ -207,7 +207,7 @@ export default class extends React.Component<Props, State> {
           date: moment(message.date),
           nickname: message.nickname,
           message: message.message,
-        }) 
+        })
       });
 
       console.log(`messages.length=${messages.length}`)
@@ -221,7 +221,7 @@ export default class extends React.Component<Props, State> {
 
 
   render() {
-    const dateStr = this.state.dateMoment === null ? '' : this.state.dateMoment.format('YYYY年MM月DD日') 
+    const dateStr = this.state.dateMoment === null ? '' : this.state.dateMoment.format('YYYY年MM月DD日')
     const title = this.state.errorDate ? `アーカイブ` : `${dateStr}のアーカイブ`
     const HeaderNav = (
       <ScreenHeaderNav
@@ -237,7 +237,7 @@ export default class extends React.Component<Props, State> {
           {HeaderNav}
           <div className="screen-inner">
             <p className="attension">
-              指定された日付の形式(YYYY-MM-DD)が正しくありません。 
+              指定された日付の形式(YYYY-MM-DD)が正しくありません。
             </p>
           </div>
         </div>
