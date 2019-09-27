@@ -24,4 +24,4 @@ jobs:
           SLACK_USERNAME: ${{ secrets.SLACK_USERNAME }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
         with:
-          args: "Deployed to production {{ EVENT_PAYLOAD.head }}"
+          args: "Deployed to production {{ EVENT_PAYLOAD.commits[0].sha }}"
