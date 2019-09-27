@@ -18,10 +18,12 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           BITFLYER_CHAT_USERNAME: ${{ secrets.BITFLYER_CHAT_USERNAME }}
           BITFLYER_CHAT_PASSWORD: ${{ secrets.BITFLYER_CHAT_PASSWORD}}
-      - uses: Ilshidur/action-slack@master
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_USERNAME: ${{ secrets.SLACK_USERNAME }}
-          SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
+      - uses: homoluctus/slatify@master
+        if: always()
         with:
-          args: "Deployed {{ GITHUB_REPOSITORY }} to production {{ GITHUB_SHA }}"
+          type: ${{ job.status }}
+          job_name: '*Deploy*'
+          icon_emoji: ':octocat:'
+          url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          channel: ${{ secrets.SLACK_CHANNEL }}
+          username: ${{ secrets.SLACK_USERNAME }}
