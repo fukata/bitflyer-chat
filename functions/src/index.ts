@@ -25,7 +25,7 @@ interface FirestoreMessageDocData {
 
 interface ArchiveMetadata {
   files: string[]
-  messageNum: number 
+  messageNum: number
   hours: {
     [key: string]: {
       files: string[]
@@ -141,7 +141,7 @@ async function archiveBitFlyerLogs(fromDate: string) {
   }
   let archiveMessages = new Array<BitFlyerChatMessage>()
   let currentIdx = 0
-  let currentHour = '00' 
+  let currentHour = '00'
   let messageCount = 0
   const perFileMessage = 1000
   const fileIndexes: any = {}
@@ -155,7 +155,7 @@ async function archiveBitFlyerLogs(fromDate: string) {
     if (archiveDateStr !== date.format('YYYY-MM-DD')) {
       continue
     }
-      
+
     const fileHour = date.format("HH")
     const fileIdx = Math.floor(messageCount / perFileMessage)
 
@@ -200,15 +200,15 @@ async function archiveBitFlyerLogs(fromDate: string) {
 
   const savedMetadata = await saveArchiveMetadata(archiveDate, metadata)
 
-  return savedMetadata 
+  return savedMetadata
 }
 
 /**
  * Storageにアーカイブを保存する。
- * @param date 
- * @param hour 
- * @param idx 
- * @param messages 
+ * @param date
+ * @param hour
+ * @param idx
+ * @param messages
  */
 async function saveArchiveMessages(date: Moment, hour: string, idx: number, messages: Array<BitFlyerChatMessage>) {
   const filename = `messages.h${hour}.${idx}.json`
@@ -229,9 +229,9 @@ async function saveArchiveMessages(date: Moment, hour: string, idx: number, mess
 }
 
 /**
- * Storageにアーカイブのメタデータを保存する。 
- * @param date 
- * @param metadata 
+ * Storageにアーカイブのメタデータを保存する。
+ * @param date
+ * @param metadata
  */
 async function saveArchiveMetadata(date: Moment, metadata: ArchiveMetadata) {
   const archiveMetadata: any = {
@@ -244,14 +244,14 @@ async function saveArchiveMetadata(date: Moment, metadata: ArchiveMetadata) {
     if (metadata.hours.hasOwnProperty(hour)) {
       const v = metadata.hours[hour]
       archiveMetadata.files = archiveMetadata.files.concat(v.files)
-      archiveMetadata.message_num += v.messageNum 
+      archiveMetadata.message_num += v.messageNum
       archiveMetadata.hours[hour] = {
         files: v.files,
         message_num: v.messageNum,
-      } 
+      }
     }
   }
-  
+
   const filename = `metadata.json`
   const bucket = storage.bucket()
   const file = bucket.file(`/public/archives/${date.format('YYYY/MM/DD')}/${filename}`)
@@ -266,13 +266,19 @@ async function saveArchiveMetadata(date: Moment, metadata: ArchiveMetadata) {
 /**
  * 定期的にチャットログを取り込むためのスケジューラー
  */
-export const scheduledImportLogs = functions.pubsub.schedule('every 1 mins').onRun(async _ => {
-  const fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
-  const concurrency = 1
-  const promisePool = new PromisePool(() => importBitFlyerLogs(fromDate), concurrency)
-  await promisePool.start();
-  console.log(`Imported messages by schedule. fromDate=${fromDate}`)
-});
+export const scheduledImportLogs = functions
+  .runWith({
+    memory: '512MB'
+  })
+  .pubsub
+  .schedule('every 1 mins')
+  .onRun(async _ => {
+    const fromDate = moment().tz('Asia/Tokyo').format('YYYY-MM-DD')
+    const concurrency = 1
+    const promisePool = new PromisePool(() => importBitFlyerLogs(fromDate), concurrency)
+    await promisePool.start();
+    console.log(`Imported messages by schedule. fromDate=${fromDate}`)
+  });
 
 /**
  * チャットログを取り込むFunctions
